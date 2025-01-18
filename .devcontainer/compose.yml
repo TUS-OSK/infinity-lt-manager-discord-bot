@@ -1,0 +1,9 @@
+services:
+    ubuntu:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: plain:22.04
+        hostname: ubuntu
+        env_file:
+            - devcontainer.env
