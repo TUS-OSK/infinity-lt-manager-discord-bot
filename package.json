@@ -1,7 +1,10 @@
 {
   "name": "infinity-lt-discord-bot",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun --watch run src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "prisma": "^6.2.1"
