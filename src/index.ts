@@ -1,4 +1,3 @@
-'use strict';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { clientReadyHandler } from './eventHandlers/clientReadyHandler';
 
