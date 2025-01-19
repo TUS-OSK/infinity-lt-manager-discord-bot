@@ -3,15 +3,11 @@
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch run src/index.ts",
-    "register": "tsx --env-file=.env ./scripts/registerCommands.ts",
-    "prisma-fmt": "bunx prisma-case-format --file prisma/schema.prisma"
+    "dev": "bun --watch run src/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "prisma": "^6.2.1",
-    "prisma-case-format": "^2.2.1",
-    "tsx": "^4.19.2"
+    "prisma": "^6.2.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
