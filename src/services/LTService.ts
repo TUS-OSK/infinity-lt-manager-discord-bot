@@ -24,14 +24,14 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
     )
 
     if (error || !lt) {
-        console.log('error', error);
+        console.error('insert error', error);
         await interaction.editReply({
             content: 'Failed to register LT',
         });
         return;
     } else {
         await interaction.editReply({
-            content: 'Successfully registered LT\n title: ' + lt.title + '\n state: ' + lt.state + '\n description: ' + lt.description,
+            content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: "+lt.description}`,
         });
     }
 
