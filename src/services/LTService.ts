@@ -6,8 +6,8 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
 
     const title = interaction.options.get('title')?.value;
     const ready = interaction.options.get('ready')?.value;
-    if (!title || !ready) {
-        console.log('title or ready is empty');
+    if (title === undefined || ready === undefined) {
+        console.error('title or ready is empty\n title: ' + title + ', ready: ' + ready);
         await interaction.editReply({
             content: 'Failed to register LT',
         });
