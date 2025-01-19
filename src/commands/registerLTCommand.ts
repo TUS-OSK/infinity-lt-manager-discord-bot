@@ -1,7 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
-import { registerLTByCommand } from '../services/LTService';
+import { registerLTByCommand } from '../services/LTManagementService';
 
 export const registerLTCommand: Command = {
     data: new SlashCommandBuilder()
