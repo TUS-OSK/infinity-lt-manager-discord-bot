@@ -1,0 +1,1 @@
+default: 'table=pascal; mapTable=snake,plural; field=pascal; mapField=snake;'
