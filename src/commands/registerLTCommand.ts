@@ -8,7 +8,7 @@ export const registerLTCommand: Command = {
         .setName('register-lt')
         .setDescription('登壇予定のLTを登録します。')
         .addStringOption(option => option.setName('title').setDescription('LTのタイトル').setRequired(true))
-        .addBooleanOption(option => option.setName('ready').setDescription('準備完了かどうか').setRequired(true))
+        .addBooleanOption(option => option.setName('ready').setDescription('今すぐ発表できますか？').setRequired(true))
         .addStringOption(option => option.setName('description').setDescription('LTの概要').setRequired(false)),
 
     isThisCommand: function (interaction) {
