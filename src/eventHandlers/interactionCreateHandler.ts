@@ -1,4 +1,4 @@
-import type { Interaction } from "discord.js";
+import { MessageFlags, type Interaction } from "discord.js";
 import commands from "../commands";
 
 export const interactionCreateHandler = async (interaction: Interaction) => {
@@ -8,9 +8,14 @@ export const interactionCreateHandler = async (interaction: Interaction) => {
         const command = commands.find(command => command.isThisCommand(interaction));
 
         if (command) {
+            try{
             await command.execute(interaction);
+            } catch (error) {
+                console.error('Failed to execute command', error);
+                await interaction.editReply({ content: 'Failed to execute command.' });
+            }
         } else {
-            await interaction.reply({ content: 'Unknown command.', ephemeral: true });
+            await interaction.reply({ content: 'Unknown command.', flags: MessageFlags.Ephemeral });
         }
     }
 
