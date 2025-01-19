@@ -1,6 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
+import { registerLTByCommand } from '../services/LTService';
 
 export const registerLTCommand: Command = {
     data: new SlashCommandBuilder()
@@ -15,6 +16,7 @@ export const registerLTCommand: Command = {
     },
 
     execute: async function (interaction) {
-        await interaction.reply({ content: 'LTを登録しました。', flags: MessageFlags.Ephemeral });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await registerLTByCommand(interaction);
     }
 }
