@@ -27,3 +27,26 @@ export const insertLT = async (title: string, speaker: string, ready: boolean, d
     }
 }
 
+
+export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+    console.log('start deleteLTById');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lt: LightningTalk = await prisma.lightningTalk.delete({
+            where: {
+                id
+            }
+        });
+        console.log('deleteLTById', lt);
+
+        return { lt, error: null };
+    } catch (error: any) {
+        console.error('Failed to deleteLTById', error);
+        return { lt: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end deleteLTById');
+    }
+}
