@@ -5,6 +5,7 @@ const environmentVariablesSchema = z.object({
     DISCORD_BOT_TOKEN: nonEmptyString,
     CLIENT_ID: nonEmptyString,
     GUILD_ID: nonEmptyString,
+    ROLE_ID: nonEmptyString,
     NOTIFICATION_CHANNEL_ID: nonEmptyString,
 })
 
