@@ -1,7 +1,7 @@
-import type { ButtonComponent, ButtonInteraction } from "discord.js";
+import type { ButtonBuilder, ButtonInteraction } from "discord.js";
 
 export type Button = {
-    create: (...args: any[]) => ButtonComponent;
+    create: (...args: any[]) => ButtonBuilder
     isThisButton: (Interaction: ButtonInteraction) => boolean;
     onClick: (interaction: ButtonInteraction) => Promise<void>;
 };
