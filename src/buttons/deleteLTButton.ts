@@ -1,5 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
+import { deleteLTByButton } from "../services/LTManagementService";
 
 export const deleteLTButton: Button = {
     create: (ltId: string) => {
@@ -12,7 +13,7 @@ export const deleteLTButton: Button = {
         return interaction.customId.startsWith('delete-lt-');
     },
     onClick: async (interaction) => {
-        interaction.deferReply();
-        interaction.editReply('削除しました');
+        await interaction.deferUpdate();
+        await deleteLTByButton(interaction);
     }
 }

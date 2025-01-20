@@ -9,8 +9,8 @@ export const interactionCreateHandler = async (interaction: Interaction) => {
         const command = commands.find(command => command.isThisCommand(interaction));
 
         if (command) {
-            try{
-            await command.execute(interaction);
+            try {
+                await command.execute(interaction);
             } catch (error) {
                 console.error('Failed to execute command', error);
                 await interaction.editReply({ content: 'Failed to execute command.' });
@@ -26,10 +26,10 @@ export const interactionCreateHandler = async (interaction: Interaction) => {
                 await button.onClick(interaction);
             } catch (error) {
                 console.error('Failed to execute button', error);
-                await interaction.reply({ content: 'Failed to execute button.', ephemeral: true });
+                await interaction.editReply({ content: 'Failed to execute button.' });
             }
         } else {
-            await interaction.reply({ content: 'Unknown button.', ephemeral: true });
+            await interaction.editReply({ content: 'Unknown button.' });
         }
     }
 

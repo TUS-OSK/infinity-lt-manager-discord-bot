@@ -10,9 +10,7 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
     const ready = interaction.options.get('ready')?.value;
     if (title === undefined || ready === undefined) {
         console.error('title or ready is empty\n title: ' + title + ', ready: ' + ready);
-        await interaction.editReply({
-            content: 'Failed to register LT',
-        });
+        await interaction.editReply({ content: 'Failed to register LT' });
         return;
     }
 
@@ -27,9 +25,7 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
 
     if (error || !lt) {
         console.error('insert error', error);
-        await interaction.editReply({
-            content: 'Failed to register LT',
-        });
+        await interaction.editReply({ content: 'Failed to register LT' });
         return;
     } else {
         const row = new ActionRowBuilder<ButtonBuilder>()
@@ -44,4 +40,31 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
     await notifyLTRegistration(interaction.client, lt);
 
     console.log('registerLTByCommand end');
+}
+
+
+export const deleteLTByButton = async (interaction: ButtonInteraction) => {
+    console.log('deleteLTByButton start');
+
+    // この時点でltIdは「delete-lt-<ltId>」の形式になっているかどうかを確認する
+    if (!interaction.customId.startsWith('delete-lt-')) {
+        console.error('ltId is empty');
+        await interaction.editReply({ content: 'Failed to delete LT' });
+        return;
+    }
+
+    const ltId = parseInt(interaction.customId.split('-')[2]);
+
+    const { lt, error } = await deleteLTById(ltId);
+    if (error || !lt) {
+        console.error('delete error', error);
+        await interaction.editReply({ content: 'Failed to delete LT' });
+        return;
+    } else {
+        const newContent = '削除済み\n' + interaction.message.content.split('\n').map((line) => '~~' + line + '~~').join('\n');
+        console.log('newContent', newContent);
+        await interaction.editReply({ content: newContent, components: [] });
+    }
+
+    console.log('deleteLTByButton end');
 }
