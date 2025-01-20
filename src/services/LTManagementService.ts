@@ -1,5 +1,6 @@
 import { CommandInteraction } from "discord.js";
 import { insertLT } from "../tables/lightningTalkTable";
+import { notifyLTRegistration } from "./LTNotificationService";
 
 export const registerLTByCommand = async (interaction: CommandInteraction) => {
     console.log('registerLTByCommand start');
@@ -34,6 +35,8 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
             content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: "+lt.description}`,
         });
     }
+
+    await notifyLTRegistration(interaction.client, lt);
 
     console.log('registerLTByCommand end');
 }
