@@ -1,6 +1,7 @@
-import { CommandInteraction } from "discord.js";
-import { insertLT } from "../tables/lightningTalkTable";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
+import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
 import { notifyLTRegistration } from "./LTNotificationService";
+import { deleteLTButton } from "../buttons/deleteLTButton";
 
 export const registerLTByCommand = async (interaction: CommandInteraction) => {
     console.log('registerLTByCommand start');
@@ -31,8 +32,12 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
         });
         return;
     } else {
+        const row = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(deleteLTButton.create(lt.id.toString()));
+
         await interaction.editReply({
-            content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: "+lt.description}`,
+            content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
+            components: [row],
         });
     }
 
