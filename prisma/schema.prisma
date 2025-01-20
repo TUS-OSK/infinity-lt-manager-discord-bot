@@ -19,6 +19,8 @@ model LightningTalk {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  notificationMessage NotificationMessage?
+
   @@map("lightning_talks")
 }
 
@@ -29,4 +31,13 @@ enum State {
   DONE
 
   @@map("states")
+}
+
+model NotificationMessage {
+  id              Int           @id @default(autoincrement())
+  messageId       String        @unique @map("message_id")
+  lightningTalk   LightningTalk @relation(fields: [lightningTalkId], references: [id], onDelete: Cascade)
+  lightningTalkId Int           @unique @map("lightning_talk_id")
+
+  @@map("notification_messages")
 }
