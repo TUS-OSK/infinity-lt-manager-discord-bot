@@ -76,3 +76,55 @@ export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null,
         console.log('end getLTById');
     }
 }
+
+/**
+ * 以下の変更のみ許容する
+ * - UNREADY <-> READY
+ * - READY -> DOING
+ * - DOING -> DONE
+*/
+export const updateLTStateById = async (id: number, state: State): Promise<{ lt: LightningTalk | null, error: any }> => {
+    console.log('start updateStateById');
+
+    const {lt: targetLT, error} = await getLTById(id);
+    if (error || !targetLT) {
+        console.error('get error', error);
+        return { lt: null, error };
+    }
+
+    const validTransitions: Record<State, State[]> = {
+        UNREADY: ['READY'],
+        READY: ['UNREADY', 'DOING'],
+        DOING: ['DONE'],
+        DONE: []
+    };
+
+    if (!validTransitions[targetLT.state].includes(state)) {
+        const error = `Invalid state transition from ${targetLT.state} to ${state}`;
+        console.error(error);
+        return { lt: null, error };
+    }
+
+
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lt = await prisma.lightningTalk.update({
+            where: {
+                id
+            },
+            data: {
+                state
+            }
+        });
+        console.log('updateStateById', lt);
+        return { lt, error: null };
+    } catch (error: any) {
+        console.error('Failed to updateStateById', error);
+        return { lt: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end updateStateById');
+    }
+}
