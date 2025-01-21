@@ -86,10 +86,16 @@ export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null,
 export const updateLTStateById = async (id: number, state: State): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start updateStateById');
 
-    const {lt: targetLT, error} = await getLTById(id);
+    const { lt: targetLT, error } = await getLTById(id);
+
     if (error || !targetLT) {
         console.error('get error', error);
         return { lt: null, error };
+    }
+
+    if (targetLT.state === state) {
+        console.error('currentState and newState are the same');
+        return { lt: targetLT, error: 'currentState and newState are the same' };
     }
 
     const validTransitions: Record<State, State[]> = {
