@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
-import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
+import { deleteLTById, insertLT, updateLTStateById } from "../tables/lightningTalkTable";
 import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { deleteNotificationMessage } from "../tables/notificationMessageTable";
@@ -78,4 +78,49 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
     }
 
     console.log('deleteLTByButton end');
+}
+
+
+export const changeToReadyLTByButton = async (interaction: ButtonInteraction) => {
+    console.log('readyLTByButton start');
+
+    if (!interaction.customId.startsWith('ready-lt-')) {
+        console.error('ltId is empty');
+        await interaction.editReply({ content: 'Failed to ready LT' });
+        return;
+    }
+
+    const ltId = parseInt(interaction.customId.split('-')[2]);
+
+    const { lt, error } = await updateLTStateById(ltId, 'READY');
+
+    // ltが取得できている場合は変更が成功しているとみなす => 既にREADYの場合も成功扱い
+    if (lt) {
+        await interaction.editReply({ content: `「${lt.title}」を発表可能にしました！` });
+    } else {
+        console.error('update error', error);
+        await interaction.editReply({ content: 'Failed to ready LT' });
+    }
+}
+
+export const changeToUnreadyLTByButton = async (interaction: ButtonInteraction) => {
+    console.log('unreadyLTByButton start');
+
+    if (!interaction.customId.startsWith('unready-lt-')) {
+        console.error('ltId is empty');
+        await interaction.editReply({ content: 'Failed to unready LT' });
+        return;
+    }
+
+    const ltId = parseInt(interaction.customId.split('-')[2]);
+
+    const { lt, error } = await updateLTStateById(ltId, 'UNREADY');
+
+    // ltが取得できている場合は変更が成功しているとみなす => 既にUNREADYの場合も成功扱い
+    if (lt) {
+        await interaction.editReply({ content: `「${lt.title}」を準備中に戻しました！` });
+    } else {
+        console.error('update error', error);
+        await interaction.editReply({ content: 'Failed to unready LT' });
+    }
 }
