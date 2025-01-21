@@ -1,5 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
+import { changeToReadyLTByButton } from "../services/LTManagementService";
 
 export const readyLTButton: Button = {
     create: (ltId: string) => {
@@ -12,6 +13,7 @@ export const readyLTButton: Button = {
         return interaction.customId.startsWith('ready-lt-');
     },
     onClick: async (interaction) => {
-        await interaction.reply('発表準備完了ですね！:tada:');
+        await interaction.deferUpdate();
+        await changeToReadyLTByButton(interaction);
     }
 }

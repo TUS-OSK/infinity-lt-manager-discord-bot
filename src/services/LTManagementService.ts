@@ -96,7 +96,20 @@ export const changeToReadyLTByButton = async (interaction: ButtonInteraction) =>
 
     // ltが取得できている場合は変更が成功しているとみなす => 既にREADYの場合も成功扱い
     if (lt) {
-        await interaction.editReply({ content: `「${lt.title}」を発表可能にしました！` });
+        const newComponents = interaction.message.components.map((row) => {
+            return new ActionRowBuilder<ButtonBuilder>().addComponents(
+                row.components.map((component) => {
+                    if (component.customId?.startsWith('ready-lt-')) {
+                        return unreadyLTButton.create(lt.id.toString());
+                    }
+                    return component;
+                }) as ButtonBuilder[]
+            );
+        });
+
+        const newContent = interaction.message.content.replace('準備中', '発表可能');
+
+        await interaction.editReply({ content: newContent, components: newComponents });
     } else {
         console.error('update error', error);
         await interaction.editReply({ content: 'Failed to ready LT' });
@@ -118,7 +131,20 @@ export const changeToUnreadyLTByButton = async (interaction: ButtonInteraction) 
 
     // ltが取得できている場合は変更が成功しているとみなす => 既にUNREADYの場合も成功扱い
     if (lt) {
-        await interaction.editReply({ content: `「${lt.title}」を準備中に戻しました！` });
+        const newComponents = interaction.message.components.map((row) => {
+            return new ActionRowBuilder<ButtonBuilder>().addComponents(
+                row.components.map((component) => {
+                    if (component.customId?.startsWith('unready-lt-')) {
+                        return readyLTButton.create(lt.id.toString());
+                    }
+                    return component;
+                }) as ButtonBuilder[]
+            );
+        });
+
+        const newContent = interaction.message.content.replace('発表可能', '準備中');
+
+        await interaction.editReply({ content: newContent, components: newComponents });
     } else {
         console.error('update error', error);
         await interaction.editReply({ content: 'Failed to unready LT' });

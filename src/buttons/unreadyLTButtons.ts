@@ -1,5 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
+import { changeToUnreadyLTByButton } from "../services/LTManagementService";
 
 export const unreadyLTButton: Button = {
     create: (ltId: string) => {
@@ -12,6 +13,7 @@ export const unreadyLTButton: Button = {
         return interaction.customId.startsWith('unready-lt-');
     },
     onClick: async (interaction) => {
-        await interaction.reply('発表準備中に戻しました:');
+        await interaction.deferUpdate();
+        await changeToUnreadyLTByButton(interaction);
     }
 }
