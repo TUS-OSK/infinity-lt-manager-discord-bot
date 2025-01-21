@@ -1,7 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
 import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
-import { notifyLTRegistration } from "./LTNotificationService";
+import { editNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
+import { deleteNotificationMessage } from "../tables/notificationMessageTable";
 
 export const registerLTByCommand = async (interaction: CommandInteraction) => {
     console.log('registerLTByCommand start');
@@ -55,15 +56,22 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
 
     const ltId = parseInt(interaction.customId.split('-')[2]);
 
-    const { lt, error } = await deleteLTById(ltId);
-    if (error || !lt) {
-        console.error('delete error', error);
+    // 先に子要素である通知メッセージを削除し、message idを取得しておく
+    const { notificationMessage } = await deleteNotificationMessage(ltId);
+
+    const { lt, error: ltError } = await deleteLTById(ltId);
+    if (ltError || !lt) {
+        console.error('delete error', ltError);
         await interaction.editReply({ content: 'Failed to delete LT' });
         return;
     } else {
         const newContent = '削除済み\n' + interaction.message.content.split('\n').map((line) => '~~' + line + '~~').join('\n');
         console.log('newContent', newContent);
         await interaction.editReply({ content: newContent, components: [] });
+
+        if (notificationMessage) {
+            await editNotificationMessageById(interaction.client, notificationMessage.messageId);
+        }
     }
 
     console.log('deleteLTByButton end');
