@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
-import { changeToReadyLTByButton } from "../services/LTManagementService";
+import { switchLTReadyStateByButton } from "../services/LTManagementService";
 
 export const readyLTButton: Button = {
     create: (ltId: string) => {
@@ -14,6 +14,6 @@ export const readyLTButton: Button = {
     },
     onClick: async (interaction) => {
         await interaction.deferUpdate();
-        await changeToReadyLTByButton(interaction);
+        await switchLTReadyStateByButton(interaction, false);
     }
 }

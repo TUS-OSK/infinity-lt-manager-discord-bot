@@ -81,72 +81,42 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
 }
 
 
-export const changeToReadyLTByButton = async (interaction: ButtonInteraction) => {
-    console.log('readyLTByButton start');
+export const switchLTReadyStateByButton = async (interaction: ButtonInteraction, isCurrentlyReady: boolean) => {
+    console.log('switchReadyState start');
 
-    if (!interaction.customId.startsWith('ready-lt-')) {
+    const currentButton = isCurrentlyReady ? unreadyLTButton : readyLTButton;
+    const newButton = isCurrentlyReady ? readyLTButton : unreadyLTButton;
+
+    if (!currentButton.isThisButton(interaction)) {
         console.error('ltId is empty');
-        await interaction.editReply({ content: 'Failed to ready LT' });
+        await interaction.editReply({ content: 'Failed to switch ready state' });
         return;
     }
 
     const ltId = parseInt(interaction.customId.split('-')[2]);
 
-    const { lt, error } = await updateLTStateById(ltId, 'READY');
+    const { lt, error } = await updateLTStateById(ltId, isCurrentlyReady ? 'UNREADY' : 'READY');
 
-    // ltが取得できている場合は変更が成功しているとみなす => 既にREADYの場合も成功扱い
+    // ltが取得できている場合は変更が成功しているとみなす
+    // => 変更が無かったときもltが取得できるため、成功扱いとする
     if (lt) {
         const newComponents = interaction.message.components.map((row) => {
             return new ActionRowBuilder<ButtonBuilder>().addComponents(
                 row.components.map((component) => {
-                    if (component.customId?.startsWith('ready-lt-')) {
-                        return unreadyLTButton.create(lt.id.toString());
+                    if (component.customId === interaction.customId) {
+                        return newButton.create(lt.id.toString());
                     }
                     return component;
                 }) as ButtonBuilder[]
             );
         });
 
-        const newContent = interaction.message.content.replace('準備中', '発表可能');
+        const newContent = interaction.message.content.replace(isCurrentlyReady ? '発表可能' : '準備中', isCurrentlyReady ? '準備中' : '発表可能');
 
         await interaction.editReply({ content: newContent, components: newComponents });
     } else {
         console.error('update error', error);
-        await interaction.editReply({ content: 'Failed to ready LT' });
+        await interaction.editReply({ content: 'Failed to switch ready state' });
     }
-}
-
-export const changeToUnreadyLTByButton = async (interaction: ButtonInteraction) => {
-    console.log('unreadyLTByButton start');
-
-    if (!interaction.customId.startsWith('unready-lt-')) {
-        console.error('ltId is empty');
-        await interaction.editReply({ content: 'Failed to unready LT' });
-        return;
-    }
-
-    const ltId = parseInt(interaction.customId.split('-')[2]);
-
-    const { lt, error } = await updateLTStateById(ltId, 'UNREADY');
-
-    // ltが取得できている場合は変更が成功しているとみなす => 既にUNREADYの場合も成功扱い
-    if (lt) {
-        const newComponents = interaction.message.components.map((row) => {
-            return new ActionRowBuilder<ButtonBuilder>().addComponents(
-                row.components.map((component) => {
-                    if (component.customId?.startsWith('unready-lt-')) {
-                        return readyLTButton.create(lt.id.toString());
-                    }
-                    return component;
-                }) as ButtonBuilder[]
-            );
-        });
-
-        const newContent = interaction.message.content.replace('発表可能', '準備中');
-
-        await interaction.editReply({ content: newContent, components: newComponents });
-    } else {
-        console.error('update error', error);
-        await interaction.editReply({ content: 'Failed to unready LT' });
-    }
+    console.log('switchReadyState end');
 }
