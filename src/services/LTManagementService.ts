@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
 import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
-import { editNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
+import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { deleteNotificationMessage } from "../tables/notificationMessageTable";
 
@@ -70,7 +70,7 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
         await interaction.editReply({ content: newContent, components: [] });
 
         if (notificationMessage) {
-            await editNotificationMessageById(interaction.client, notificationMessage.messageId);
+            await deleteNotificationMessageById(interaction.client, notificationMessage.messageId);
         }
     }
 

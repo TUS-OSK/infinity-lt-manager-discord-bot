@@ -28,7 +28,8 @@ export const notifyLTRegistration = async (client: Client, lt: LightningTalk) =>
     console.log('end announceRegisterLT');
 }
 
-export const editNotificationMessageById = async (client: Client, messageId:string) => {
+/* 完全に削除するのではなく、罫線を引いて削除したことを示す */
+export const deleteNotificationMessageById = async (client: Client, messageId:string) => {
     console.log('start deleteNotificationMessageById');
 
     const channel = client.channels.cache.get(NOTIFICATION_CHANNEL_ID) as TextChannel;
