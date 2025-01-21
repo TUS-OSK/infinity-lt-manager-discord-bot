@@ -50,3 +50,29 @@ export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | nu
         console.log('end deleteLTById');
     }
 }
+
+
+export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+    console.log('start getLTById');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lt = await prisma.lightningTalk.findUnique({
+            where: {
+                id
+            }
+        });
+        console.log('getLTById', lt);
+        if (!lt) {
+            return { lt: null, error: 'LT not found' };
+        }
+        return { lt, error: null };
+    } catch (error: any) {
+        console.error('Failed to getLTById', error);
+        return { lt: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getLTById');
+    }
+}
