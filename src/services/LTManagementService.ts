@@ -3,6 +3,8 @@ import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
 import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { deleteNotificationMessage } from "../tables/notificationMessageTable";
+import { readyLTButton } from "../buttons/readyLTButton";
+import { unreadyLTButton } from "../buttons/unreadyLTButtons";
 
 export const registerLTByCommand = async (interaction: CommandInteraction) => {
     console.log('registerLTByCommand start');
@@ -30,7 +32,8 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
         return;
     } else {
         const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(deleteLTButton.create(lt.id.toString()));
+            .addComponents(deleteLTButton.create(lt.id.toString()))
+            .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
 
         await interaction.editReply({
             content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
