@@ -1,7 +1,6 @@
 import { roleMention, userMention, type Client, type TextChannel } from "discord.js";
 import type { LightningTalk } from "@prisma/client";
-import { deleteNotificationMessage, insertNotificationMessage } from "../tables/notificationMessageTable";
-import { map } from "zod";
+import { insertNotificationMessage } from "../tables/notificationMessageTable";
 
 const { NOTIFICATION_CHANNEL_ID, ROLE_ID } = process.env;
 

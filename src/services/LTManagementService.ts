@@ -1,8 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
-import { deleteLTById, insertLT } from "../tables/lightningTalkTable";
+import { deleteLTById, insertLT, updateLTStateById } from "../tables/lightningTalkTable";
 import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { deleteNotificationMessage } from "../tables/notificationMessageTable";
+import { readyLTButton } from "../buttons/readyLTButton";
+import { unreadyLTButton } from "../buttons/unreadyLTButtons";
 
 export const registerLTByCommand = async (interaction: CommandInteraction) => {
     console.log('registerLTByCommand start');
@@ -30,7 +32,8 @@ export const registerLTByCommand = async (interaction: CommandInteraction) => {
         return;
     } else {
         const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(deleteLTButton.create(lt.id.toString()));
+            .addComponents(deleteLTButton.create(lt.id.toString()))
+            .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
 
         await interaction.editReply({
             content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
@@ -75,4 +78,45 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
     }
 
     console.log('deleteLTByButton end');
+}
+
+
+export const switchLTReadyStateByButton = async (interaction: ButtonInteraction, isCurrentlyReady: boolean) => {
+    console.log('switchReadyState start');
+
+    const currentButton = isCurrentlyReady ? unreadyLTButton : readyLTButton;
+    const newButton = isCurrentlyReady ? readyLTButton : unreadyLTButton;
+
+    if (!currentButton.isThisButton(interaction)) {
+        console.error('ltId is empty');
+        await interaction.editReply({ content: 'Failed to switch ready state' });
+        return;
+    }
+
+    const ltId = parseInt(interaction.customId.split('-')[2]);
+
+    const { lt, error } = await updateLTStateById(ltId, isCurrentlyReady ? 'UNREADY' : 'READY');
+
+    // ltが取得できている場合は変更が成功しているとみなす
+    // => 変更が無かったときもltが取得できるため、成功扱いとする
+    if (lt) {
+        const newComponents = interaction.message.components.map((row) => {
+            return new ActionRowBuilder<ButtonBuilder>().addComponents(
+                row.components.map((component) => {
+                    if (component.customId === interaction.customId) {
+                        return newButton.create(lt.id.toString());
+                    }
+                    return component;
+                }) as ButtonBuilder[]
+            );
+        });
+
+        const newContent = interaction.message.content.replace(isCurrentlyReady ? '発表可能' : '準備中', isCurrentlyReady ? '準備中' : '発表可能');
+
+        await interaction.editReply({ content: newContent, components: newComponents });
+    } else {
+        console.error('update error', error);
+        await interaction.editReply({ content: 'Failed to switch ready state' });
+    }
+    console.log('switchReadyState end');
 }
