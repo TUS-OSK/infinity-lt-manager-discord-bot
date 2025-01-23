@@ -34,11 +34,24 @@ export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | nu
     const prisma = new PrismaClient();
 
     try {
-        const lt: LightningTalk = await prisma.lightningTalk.delete({
+        const { lt } = await getLTById(id);
+        if (lt === null) {
+            console.error('LT not found');
+            return { lt: null, error: 'LT not found' };
+        }
+        // validation
+        // DOING, DONEのLTは削除できない
+        if (lt.state === 'DOING' || lt.state === 'DONE') {
+            console.error('Cannot delete LT in DOING or DONE state');
+            return { lt: null, error: 'Cannot delete LT in DOING or DONE state' };
+        }
+
+        await prisma.lightningTalk.delete({
             where: {
                 id
             }
         });
+
         console.log('deleteLTById', lt);
 
         return { lt, error: null };
