@@ -1,6 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
+import { notifyNextLTsByCommand } from '../services/LTNotificationService';
 
 export const notifyNextLTsCommand: Command = {
     data: new SlashCommandBuilder()
@@ -14,5 +15,6 @@ export const notifyNextLTsCommand: Command = {
 
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await notifyNextLTsByCommand(interaction);
     }
 }
