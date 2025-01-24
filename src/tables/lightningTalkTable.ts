@@ -90,12 +90,7 @@ export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null,
     }
 }
 
-/**
- * 以下の変更のみ許容する
- * - UNREADY <-> READY
- * - READY -> DOING
- * - DOING -> DONE
-*/
+
 export const updateLTStateById = async (id: number, state: State): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start updateStateById');
 
@@ -111,6 +106,12 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
         return { lt: targetLT, error: 'currentState and newState are the same' };
     }
 
+    /**
+     * 以下の変更のみ許容する
+     * - UNREADY <-> READY
+     * - READY -> DOING
+     * - DOING -> DONE
+    */
     const validTransitions: Record<State, State[]> = {
         UNREADY: ['READY'],
         READY: ['UNREADY', 'DOING'],
@@ -123,8 +124,6 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
         console.error(error);
         return { lt: null, error };
     }
-
-
 
     const prisma = new PrismaClient();
 
@@ -153,7 +152,8 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
 
     const prisma = new PrismaClient();
 
-    try {        const sortedReadyLTs: LightningTalk[] = await prisma.$queryRaw`
+    try {
+        const sortedReadyLTs: LightningTalk[] = await prisma.$queryRaw`
         SELECT lt.*
         FROM "lightning_talks" lt
         INNER JOIN (
