@@ -1,4 +1,4 @@
-import { PrismaClient, State, type LightningTalk } from "@prisma/client";
+import { Prisma, PrismaClient, State, type LightningTalk } from "@prisma/client";
 
 export const insertLT = async (title: string, speaker: string, ready: boolean, description?: string): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start insertLT');
@@ -145,5 +145,42 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
     } finally {
         await prisma.$disconnect();
         console.log('end updateStateById');
+    }
+}
+
+export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTalk[] | null, error: any }> => {
+    console.log('start getNextLTsList');
+
+    const prisma = new PrismaClient();
+
+    try {        const sortedReadyLTs: LightningTalk[] = await prisma.$queryRaw`
+        SELECT lt.*
+        FROM "lightning_talks" lt
+        INNER JOIN (
+            -- 各speakerのREADYなLTの中で最も古いものを取得
+            SELECT speaker, MIN("updated_at") as min_updated_at
+            FROM "lightning_talks"
+            WHERE state = 'READY'
+            GROUP BY speaker
+        ) sub ON lt.speaker = sub.speaker AND lt."updated_at" = sub.min_updated_at
+        ORDER BY (
+            -- 発表済みのLTの数が少ない順に並べる
+            SELECT COUNT(*)
+            FROM "lightning_talks" lt2
+            WHERE lt2.speaker = lt.speaker AND lt2.state = 'DONE'
+        ) ASC
+        LIMIT ${limit}
+    `;
+        console.log('getNextLTsList', sortedReadyLTs);
+
+        return { lts: sortedReadyLTs, error: null };
+
+    } catch (error: any) {
+        console.error('Failed to getNextLTsList', error);
+        return { lts: null, error };
+
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getNextLTsList');
     }
 }
