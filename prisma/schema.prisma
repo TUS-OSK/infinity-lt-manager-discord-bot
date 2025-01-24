@@ -20,6 +20,7 @@ model LightningTalk {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   notificationMessage NotificationMessage?
+  nextLightningTalk   NextLightningTalk?
 
   @@map("lightning_talks")
 }
@@ -38,6 +39,18 @@ model NotificationMessage {
   messageId       String        @unique @map("message_id")
   lightningTalk   LightningTalk @relation(fields: [lightningTalkId], references: [id], onDelete: Cascade)
   lightningTalkId Int           @unique @map("lightning_talk_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
   @@map("notification_messages")
+}
+
+model NextLightningTalk {
+  id              Int           @id @default(autoincrement())
+  lightningTalk   LightningTalk @relation(fields: [lightningTalkId], references: [id], onDelete: Cascade)
+  lightningTalkId Int           @unique @map("lightning_talk_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("next_lightning_talks")
 }
