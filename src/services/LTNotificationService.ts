@@ -1,7 +1,7 @@
 import { CommandInteraction, roleMention, userMention, type Client, type TextChannel } from "discord.js";
 import type { LightningTalk } from "@prisma/client";
 import { insertNotificationMessage } from "../tables/notificationMessageTable";
-import { getNextReadyLTs } from "../tables/lightningTalkTable";
+import { getNextReadyLTs, updateLTStateById } from "../tables/lightningTalkTable";
 import { insertNextLTs } from "../tables/nextLightningTalkTable";
 
 const { NOTIFICATION_CHANNEL_ID, ROLE_ID } = process.env;
@@ -106,6 +106,15 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
         return;
     }
 
+    lts.map(async (lt) => {
+        const { lt: tmpLT, error } = await updateLTStateById(lt.id, 'DOING');
+        if (error || !tmpLT) {
+            console.error('Failed to update LT', error);
+            await interaction.editReply({ content: 'Failed to start LT' });
+            return;
+        }
+    });
+
     const notificationMessageContent = [
         `${roleMention(ROLE_ID)}`,
         `以下のLTセッションを開始します！`,
@@ -121,5 +130,4 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
     await interaction.editReply({ content: 'LTを開始しました！' });
     console.log('end startLTsByCommand');
 }
-
 
