@@ -1,5 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
+import { moveNextLT } from "../services/LTNotificationService";
 
 export const moveNextLTButton: Button = {
     create: () => {
@@ -13,5 +14,6 @@ export const moveNextLTButton: Button = {
     },
     onClick: async (interaction) => {
         await interaction.deferUpdate();
+        await moveNextLT(interaction.client);
     }
 }

@@ -1,8 +1,9 @@
-import { CommandInteraction, roleMention, userMention, type Client, type TextChannel } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, CommandInteraction, roleMention, userMention, type Client, type TextChannel } from "discord.js";
 import type { LightningTalk } from "@prisma/client";
 import { insertNotificationMessage } from "../tables/notificationMessageTable";
 import { getNextReadyLTs, updateLTStateById } from "../tables/lightningTalkTable";
-import { insertNextLTs } from "../tables/nextLightningTalkTable";
+import { deleteNextLT, getNextLT, insertNextLTs } from "../tables/nextLightningTalkTable";
+import { moveNextLTButton } from "../buttons/moveNextLTButton";
 
 const { NOTIFICATION_CHANNEL_ID, ROLE_ID } = process.env;
 
@@ -127,7 +128,69 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
     const sendMessage = await channel?.send(notificationMessageContent);
     console.log('sendMessage', sendMessage.content);
 
+    await moveNextLT(interaction.client, true);
+
     await interaction.editReply({ content: 'LTを開始しました！' });
     console.log('end startLTsByCommand');
+}
+
+export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
+    console.log('start moveNextLT');
+
+    if (!isFirst) {
+        const { nextLT: doneLT, error } = await getNextLT();
+
+        if (error || !doneLT) {
+            console.error('Failed to get next LT', error);
+            return;
+        }
+
+        const { lt: currentLT, error: updateCurrentLTError } = await updateLTStateById(doneLT.lightningTalk.id, 'DONE');
+
+        if (updateCurrentLTError || !currentLT) {
+            console.error('Failed to update current LT', updateCurrentLTError);
+            return;
+        }
+
+        const { error: deleteNextLTError } = await deleteNextLT(doneLT.id);
+
+        if (deleteNextLTError) {
+            console.error('Failed to delete next LT', deleteNextLTError);
+            return;
+        }
+    }
+
+    const { nextLT, error: getNextLTError } = await getNextLT();
+
+    if (getNextLTError !== 'No next lightning talk found' && (getNextLTError || !nextLT)) {
+        console.error('Failed to get next LT', getNextLTError);
+        return;
+    }
+
+    const channel = client.channels.cache.get(NOTIFICATION_CHANNEL_ID) as TextChannel;
+    console.log('channel', channel.name);
+
+    const notificationMessageContent =
+        nextLT ?
+            [
+                `${roleMention(ROLE_ID)}`,
+                `次のLTは以下の通りです！`,
+                `「${nextLT.lightningTalk.title}」 発表者：${userMention(nextLT.lightningTalk.speaker)}`,
+                nextLT.lightningTalk.description ? `概要：${nextLT.lightningTalk.description}` : '',
+            ].filter(Boolean).join('\n')
+            :
+            `${roleMention(ROLE_ID)}\nこのセッションにおける全てのLTが終了しました！`;
+
+    const row =
+        nextLT ?
+            new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(moveNextLTButton.create())
+            :
+            null;
+
+    const sendMessage = await channel?.send({ content: notificationMessageContent, components: row ? [row] : [] });
+    console.log('sendMessage', sendMessage.content);
+
+    console.log('end moveNextLT');
 }
 
