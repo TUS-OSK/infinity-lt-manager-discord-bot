@@ -21,5 +21,6 @@ export const moveNextLTButton: Button = {
         }
         await interaction.deferUpdate();
         await moveNextLT(interaction.client);
+        await interaction.message.edit({ components: [] });
     }
 }
