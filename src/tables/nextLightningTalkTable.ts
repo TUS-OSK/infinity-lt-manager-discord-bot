@@ -47,3 +47,49 @@ const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }>
     }
 }
 
+export const getNextLT = async (): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
+    console.log('start getNextLT');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const nextLT: NextLightningTalk | null = await prisma.nextLightningTalk.findFirst();
+        if (!nextLT) {
+            console.log('No next lightning talk found');
+            return { nextLT: null, error: 'No next lightning talk found' };
+        }
+        console.log('getNextLT', nextLT);
+
+        return { nextLT, error: null };
+    } catch (error: any) {
+        console.error('Failed to getNextLT', error);
+        return { nextLT: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getNextLT');
+    }
+}
+
+
+export const deleteFirstNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
+    console.log('start deleteFirstNextLT');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const nextLT: NextLightningTalk = await prisma.nextLightningTalk.delete({
+            where: {
+                id: nextLTId
+            }
+        });
+        console.log('deleteFirstNextLT', nextLT);
+
+        return { nextLT, error: null };
+    } catch (error: any) {
+        console.error('Failed to deleteFirstNextLT', error);
+        return { nextLT: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end deleteFirstNextLT');
+    }
+}
