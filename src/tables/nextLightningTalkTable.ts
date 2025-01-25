@@ -2,9 +2,9 @@ import { type NextLightningTalk, PrismaClient } from "@prisma/client";
 
 
 export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextLTs: NextLightningTalk[] | null, error: any }> => {
-
     console.log('start insertNextLTs');
 
+    await deleteAllNextLTs();
     const prisma = new PrismaClient();
 
     try {
@@ -28,22 +28,22 @@ export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextL
     }
 }
 
-
-export const getAllNextLTs = async (): Promise<{ nextLTs: NextLightningTalk[] | null, error: any }> => {
-    console.log('start getAllNextLTs');
+const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }> => {
+    console.log('start deleteAllNextLTs');
 
     const prisma = new PrismaClient();
 
     try {
-        const nextLTs: NextLightningTalk[] = await prisma.nextLightningTalk.findMany();
-        console.log('getAllNextLTs', nextLTs);
+        const result = await prisma.nextLightningTalk.deleteMany();
+        console.log('deleteAllNextLTs', result);
 
-        return { nextLTs, error: null };
+        return { count: result.count, error: null };
     } catch (error: any) {
-        console.error('Failed to getAllNextLTs', error);
-        return { nextLTs: null, error };
+        console.error('Failed to deleteAllNextLTs', error);
+        return { count: null, error };
     } finally {
         await prisma.$disconnect();
-        console.log('end getAllNextLTs');
+        console.log('end deleteAllNextLTs');
     }
 }
+
