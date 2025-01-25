@@ -58,6 +58,7 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
             include: {
                 lightningTalk: {
                     select: {
+                        id: true,
                         title: true,
                         speaker: true,
                         description: true
