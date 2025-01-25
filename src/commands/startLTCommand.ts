@@ -1,6 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
+import { startLTsByCommand } from '../services/LTNotificationService';
 
 const { ADMIN_USER_ID } = process.env;
 
@@ -19,5 +20,6 @@ export const startLTsCommand: Command = {
             return;
         }
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await startLTsByCommand(interaction);
     }
 }
