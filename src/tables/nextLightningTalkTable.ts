@@ -1,4 +1,5 @@
 import { type NextLightningTalk, PrismaClient } from "@prisma/client";
+import type { NextLightningTalkWithDetails } from "../types";
 
 
 export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextLTs: NextLightningTalk[] | null, error: any }> => {
@@ -47,13 +48,23 @@ const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }>
     }
 }
 
-export const getNextLT = async (): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
+export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetails | null, error: any }> => {
     console.log('start getNextLT');
 
     const prisma = new PrismaClient();
 
     try {
-        const nextLT: NextLightningTalk | null = await prisma.nextLightningTalk.findFirst();
+        const nextLT: NextLightningTalkWithDetails | null = await prisma.nextLightningTalk.findFirst({
+            include: {
+                lightningTalk: {
+                    select: {
+                        title: true,
+                        speaker: true,
+                        description: true
+                    }
+                }
+            }
+        });
         if (!nextLT) {
             console.log('No next lightning talk found');
             return { nextLT: null, error: 'No next lightning talk found' };
@@ -70,9 +81,8 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalk | null, e
     }
 }
 
-
-export const deleteFirstNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
-    console.log('start deleteFirstNextLT');
+export const deleteNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
+    console.log('start deleteNextLT');
 
     const prisma = new PrismaClient();
 
@@ -82,14 +92,14 @@ export const deleteFirstNextLT = async (nextLTId: number): Promise<{ nextLT: Nex
                 id: nextLTId
             }
         });
-        console.log('deleteFirstNextLT', nextLT);
+        console.log('deleteNextLT', nextLT);
 
         return { nextLT, error: null };
     } catch (error: any) {
-        console.error('Failed to deleteFirstNextLT', error);
+        console.error('Failed to deleteNextLT', error);
         return { nextLT: null, error };
     } finally {
         await prisma.$disconnect();
-        console.log('end deleteFirstNextLT');
+        console.log('end deleteNextLT');
     }
 }
