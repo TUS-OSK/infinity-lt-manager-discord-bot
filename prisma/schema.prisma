@@ -49,6 +49,7 @@ model NextLightningTalk {
   id              Int           @id @default(autoincrement())
   lightningTalk   LightningTalk @relation(fields: [lightningTalkId], references: [id], onDelete: Cascade)
   lightningTalkId Int           @unique @map("lightning_talk_id")
+  order           Int           @unique
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 

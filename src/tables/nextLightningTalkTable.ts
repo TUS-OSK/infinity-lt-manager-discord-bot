@@ -9,10 +9,11 @@ export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextL
     const prisma = new PrismaClient();
 
     try {
-        const nextLTs: NextLightningTalk[] = await Promise.all(lightningTalkIds.map(async (lightningTalkId) => {
+        const nextLTs: NextLightningTalk[] = await Promise.all(lightningTalkIds.map(async (lightningTalkId, index) => {
             const nextLT = await prisma.nextLightningTalk.create({
                 data: {
-                    lightningTalkId
+                    lightningTalkId,
+                    order: index
                 }
             });
             return nextLT;
@@ -64,6 +65,9 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
                         description: true
                     }
                 }
+            },
+            orderBy: {
+                order: 'asc'
             }
         });
         if (!nextLT) {
