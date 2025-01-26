@@ -1,6 +1,16 @@
 import { PrismaClient, State, type LightningTalk } from "@prisma/client";
 
-export const insertLT = async (title: string, speaker: string, ready: boolean, description?: string): Promise<{ lt: LightningTalk | null, error: any }> => {
+/**
+ * Lightning Talkを挿入します。
+ * 挿入可能なのはstateがREADYまたはUNREADYのLTのみであるため、booleanのreadyによってstateを設定します。
+ * 
+ * @param {string} title - Lightning Talkのタイトル
+ * @param {string} speaker - スピーカーの名前
+ * @param {boolean} ready - 準備ができているかどうか
+ * @param {string} description - Lightning Talkの説明
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 挿入されたLightning Talkとエラー情報を含むPromise
+ */
+export const insertLT = async (title: string, speaker: string, ready: boolean, description: string): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start insertLT');
 
     const state: State = ready ? 'READY' : 'UNREADY';
@@ -27,18 +37,26 @@ export const insertLT = async (title: string, speaker: string, ready: boolean, d
     }
 }
 
-
+/**
+ * 指定されたIDのLightning Talkを削除します。
+ * stateがDOINGまたはDONEのLTは削除できません。
+ * 
+ * @param {number} id - 削除するLightning TalkのID
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 削除されたLightning Talkとエラー情報を含むPromise
+ */
 export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start deleteLTById');
 
     const prisma = new PrismaClient();
 
     try {
-        const { lt } = await getLTById(id);
-        if (lt === null) {
-            console.error('LT not found');
-            return { lt: null, error: 'LT not found' };
+        const { lt, error: getError } = await getLTById(id);
+
+        // [WHY] lt===nullのときgetErrorは必ず存在するはずだが、後の処理でtype errorが出るため、明示的にチェック
+        if (getError || !lt) {
+            return { lt: null, error: getError };
         }
+
         // validation
         // DOING, DONEのLTは削除できない
         if (lt.state === 'DOING' || lt.state === 'DONE') {
@@ -64,22 +82,23 @@ export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | nu
     }
 }
 
-
-export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+/**
+ * 指定されたIDのLightning Talkを取得します。
+ * 
+ * @param {number} id - 取得するLightning TalkのID
+ * @returns {Promise<{ lt: LightningTalk, error: null } | { lt: null, error: NonNullable<any> }>} 指定されたIDのLightning Talkとエラー情報を含むPromise
+ */
+export const getLTById = async (id: number): Promise<{ lt: LightningTalk, error: null } | { lt: null, error: NonNullable<any> }> => {
     console.log('start getLTById');
 
     const prisma = new PrismaClient();
 
     try {
-        const lt = await prisma.lightningTalk.findUnique({
+        const lt = await prisma.lightningTalk.findUniqueOrThrow({
             where: {
                 id
             }
         });
-        console.log('getLTById', lt);
-        if (!lt) {
-            return { lt: null, error: 'LT not found' };
-        }
         return { lt, error: null };
     } catch (error: any) {
         console.error('Failed to getLTById', error);
@@ -90,7 +109,17 @@ export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null,
     }
 }
 
-
+/**
+ * 指定されたIDのLightning Talkの状態を更新します。
+ * 以下の状態遷移のみ許容します。
+ * - UNREADY <-> READY
+ * - READY -> DOING
+ * - DOING -> DONE
+ *  
+ * @param {number} id - 更新するLightning TalkのID
+ * @param {State} state - 新しい状態
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 更新されたLightning Talkとエラー情報を含むPromise
+ */
 export const updateLTStateById = async (id: number, state: State): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start updateStateById');
 
@@ -147,6 +176,12 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
     }
 }
 
+/**
+ * 次に発表する準備ができているLightning Talkのリストを取得します。
+ * 
+ * @param {number} limit - 取得するLightning Talkの最大数
+ * @returns {Promise<{ lts: LightningTalk[] | null, error: any }>} 取得されたLightning Talkのリストとエラー情報を含むPromise
+ */
 export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTalk[] | null, error: any }> => {
     console.log('start getNextLTsList');
 
