@@ -1,6 +1,12 @@
 import { type NotificationMessage, PrismaClient } from "@prisma/client";
 
-
+/**
+ * 指定されたlightningTalkIdとmessageIdを使用して通知メッセージを挿入します。
+ * 
+ * @param {number} lightningTalkId - 挿入する通知メッセージのlightningTalkId。
+ * @param {string} messageId - 挿入する通知メッセージのmessageId。
+ * @returns {Promise<{ notificationMessage: NotificationMessage | null, error: any }>} 挿入された通知メッセージとエラー情報を含むPromise。
+ */
 export const insertNotificationMessage = async (lightningTalkId: number, messageId: string): Promise<{ notificationMessage: NotificationMessage | null, error: any }> => {
     console.log('start insertNotificationMessage');
 
@@ -25,6 +31,12 @@ export const insertNotificationMessage = async (lightningTalkId: number, message
     }
 }
 
+/**
+ * 指定されたlightningTalkIdを使用して通知メッセージを削除します。
+ * 
+ * @param {number} lightningTalkId - 削除する通知メッセージのlightningTalkId。
+ * @returns {Promise<{ notificationMessage: NotificationMessage | null, error: any }>} 削除された通知メッセージとエラー情報を含むPromise。
+ */
 export const deleteNotificationMessage = async (lightningTalkId: number): Promise<{ notificationMessage: NotificationMessage | null, error: any }> => {
     console.log('start deleteNotificationMessage');
 
