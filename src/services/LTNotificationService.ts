@@ -30,20 +30,6 @@ export const notifyLTRegistration = async (client: Client, lt: LightningTalk) =>
     console.log('end announceRegisterLT');
 }
 
-/* 完全に削除するのではなく、罫線を引いて削除したことを示す */
-export const deleteNotificationMessageById = async (client: Client, messageId: string) => {
-    console.log('start deleteNotificationMessageById');
-
-    const channel = client.channels.cache.get(NOTIFICATION_CHANNEL_ID) as TextChannel;
-    const message = await channel.messages.fetch(messageId);
-    console.log('message', message.content);
-
-    await message.edit('このLTは削除されました\n' + message.content.split('\n').map((line) => '~~' + line + '~~').join('\n'));
-
-    console.log('end deleteNotificationMessageById');
-}
-
-
 export const notifyNextLTsByCommand = async (interaction: CommandInteraction) => {
     console.log('start notifyNextLTs');
 
