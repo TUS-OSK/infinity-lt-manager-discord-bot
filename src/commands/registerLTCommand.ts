@@ -1,7 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
-import { registerLTByCommand } from '../services/LTManagementService';
+import { registerLTInteraction } from '../services/LTManagementService';
 
 export const registerLTCommand: Command = {
     data: new SlashCommandBuilder()
@@ -17,6 +17,18 @@ export const registerLTCommand: Command = {
 
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        await registerLTByCommand(interaction);
+
+        const title = interaction.options?.get('title')?.value as string | undefined;
+        const ready = interaction.options?.get('ready')?.value as boolean | undefined;
+        const description = interaction.options?.get('description')?.value as string | undefined;
+
+        if (title === undefined || ready === undefined) {
+            await interaction.editReply({ content: 'Failed to parse options' });
+            return;
+        }
+
+        const responseMessageOptions = await registerLTInteraction(interaction.client, title, ready, interaction.user.id, description);
+        await interaction.editReply(responseMessageOptions);
     }
+
 }

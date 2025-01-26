@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
+import { ActionRowBuilder } from "discord.js";
+import type { ButtonBuilder, ButtonInteraction, Client, BaseMessageOptions } from "discord.js";
 import { deleteLTById, insertLT, updateLTStateById } from "../tables/lightningTalkTable";
 import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
@@ -6,44 +7,43 @@ import { deleteNotificationMessage } from "../tables/notificationMessageTable";
 import { readyLTButton } from "../buttons/readyLTButton";
 import { unreadyLTButton } from "../buttons/unreadyLTButtons";
 
-export const registerLTByCommand = async (interaction: CommandInteraction) => {
+
+/**
+ * LTを登録する関数
+ * 
+ * @param client - クライアントオブジェクト
+ * @param title - LTのタイトル
+ * @param ready - 発表準備ができているかどうかのフラグ
+ * @param userId - ユーザーID
+ * @param description - LTの説明（省略可能）
+ * @returns 返信すべきメッセージオプションを含むPromise
+ */
+export const registerLTInteraction = async (client: Client, title: string, ready: boolean, userId: string, description: string = ''): Promise<BaseMessageOptions> => {
     console.log('registerLTByCommand start');
-
-    const title = interaction.options.get('title')?.value;
-    const ready = interaction.options.get('ready')?.value;
-    if (title === undefined || ready === undefined) {
-        console.error('title or ready is empty\n title: ' + title + ', ready: ' + ready);
-        await interaction.editReply({ content: 'Failed to register LT' });
-        return;
-    }
-
-    const description = interaction.options.get('description')?.value || '';
 
     const { lt, error } = await insertLT(
         title as string,
-        interaction.user.id,
+        userId as string,
         ready as boolean,
         description as string
     )
 
     if (error || !lt) {
         console.error('insert error', error);
-        await interaction.editReply({ content: 'Failed to register LT' });
-        return;
-    } else {
-        const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
-
-        await interaction.editReply({
-            content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
-            components: [row],
-        });
+        return { content: 'Failed to register LT' };
     }
 
-    await notifyLTRegistration(interaction.client, lt);
+    await notifyLTRegistration(client, lt);
+
+    const row = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(deleteLTButton.create(lt.id.toString()))
+        .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
 
     console.log('registerLTByCommand end');
+    return {
+        content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
+        components: [row],
+    };
 }
 
 
