@@ -178,6 +178,9 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
 
 /**
  * 次に発表する準備ができているLightning Talkのリストを取得します。
+ * 以下の順で、speakerの重複がないように取得します。
+ * 1. 発表済みの回数が少ない順
+ * 2. 更新日時が古い順
  * 
  * @param {number} limit - 取得するLightning Talkの最大数
  * @returns {Promise<{ lts: LightningTalk[] | null, error: any }>} 取得されたLightning Talkのリストとエラー情報を含むPromise
@@ -188,24 +191,42 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
     const prisma = new PrismaClient();
 
     try {
-        const sortedReadyLTs: LightningTalk[] = await prisma.$queryRaw`
-        SELECT lt.*
-        FROM "lightning_talks" lt
-        INNER JOIN (
-            -- 各speakerのREADYなLTの中で最も古いものを取得
-            SELECT speaker, MIN("updated_at") as min_updated_at
-            FROM "lightning_talks"
-            WHERE state = 'READY'
-            GROUP BY speaker
-        ) sub ON lt.speaker = sub.speaker AND lt."updated_at" = sub.min_updated_at
-        ORDER BY (
-            -- 発表済みのLTの数が少ない順に並べる
-            SELECT COUNT(*)
-            FROM "lightning_talks" lt2
-            WHERE lt2.speaker = lt.speaker AND lt2.state = 'DONE'
-        ) ASC
-        LIMIT ${limit}
-    `;
+
+        const readyLTs = await prisma.lightningTalk.findMany({
+            where: {
+                state: 'READY'
+            },
+            orderBy: {
+                updatedAt: 'asc'
+            }
+        });
+
+        const speakerDoneCounts = await prisma.lightningTalk.groupBy({
+            by: ['speaker'],
+            where: {
+                state: 'DONE'
+            },
+            _count: {
+                _all: true
+            }
+        });
+
+        // [WHY] 発表済みLTの順でソートするためのMap
+        const speakerDoneCountMap = new Map(speakerDoneCounts.map(item => [item.speaker, item._count._all]));
+        const speakerSet = new Set<string>();   // filter用のSet
+
+        const sortedReadyLTs = readyLTs
+            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. updatedAtが古いものを採用）
+            .filter(lt => {
+                if (speakerSet.has(lt.speaker)) {
+                    return false;
+                }
+                speakerSet.add(lt.speaker);
+                return true;
+            })
+            .sort((a, b) => (speakerDoneCountMap.get(a.speaker) || 0) - (speakerDoneCountMap.get(b.speaker) || 0))
+            .slice(0, limit);
+
         console.log('getNextLTsList', sortedReadyLTs);
 
         return { lts: sortedReadyLTs, error: null };
