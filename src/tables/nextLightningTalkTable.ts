@@ -70,10 +70,6 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
                 order: 'asc'
             }
         });
-        if (!nextLT) {
-            console.log('No next lightning talk found');
-            return { nextLT: null, error: 'No next lightning talk found' };
-        }
         console.log('getNextLT', nextLT);
 
         return { nextLT, error: null };

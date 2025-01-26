@@ -162,7 +162,7 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
 
     const { nextLT, error: getNextLTError } = await getNextLT();
 
-    if (getNextLTError !== 'No next lightning talk found' && (getNextLTError || !nextLT)) {
+    if (getNextLTError) {
         console.error('Failed to get next LT', getNextLTError);
         return;
     }
@@ -181,14 +181,10 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
             :
             `${roleMention(ROLE_ID)}\nこのセッションにおける全てのLTが終了しました！`;
 
-    const row =
-        nextLT ?
-            new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(moveNextLTButton.create())
-            :
-            null;
+    const row = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(moveNextLTButton.create())
 
-    const sendMessage = await channel?.send({ content: notificationMessageContent, components: row ? [row] : [] });
+    const sendMessage = await channel?.send({ content: notificationMessageContent, components: nextLT ? [row] : [] });
     console.log('sendMessage', sendMessage.content);
 
     console.log('end moveNextLT');
