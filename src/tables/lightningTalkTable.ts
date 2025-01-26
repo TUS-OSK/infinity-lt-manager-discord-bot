@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, State, type LightningTalk } from "@prisma/client";
+import { PrismaClient, State, type LightningTalk } from "@prisma/client";
 
 export const insertLT = async (title: string, speaker: string, ready: boolean, description?: string): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start insertLT');
