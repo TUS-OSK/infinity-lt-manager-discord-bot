@@ -1,11 +1,20 @@
-import { type NextLightningTalk, PrismaClient } from "@prisma/client";
+import { PrismaClient, type NextLightningTalk } from "@prisma/client";
 import type { NextLightningTalkWithDetails } from "../types";
 
-
+/**
+ * 次のLTを挿入します。
+ * 挿入時、元々のデータは全て削除されます。
+ * 
+ * @param {number[]} lightningTalkIds - 挿入するLTのIDの配列
+ * @returns {Promise<{ nextLTs: NextLightningTalk[] | null, error: any }>} 挿入されたLTの配列とエラー情報を含むPromise
+ */
 export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextLTs: NextLightningTalk[] | null, error: any }> => {
     console.log('start insertNextLTs');
 
-    await deleteAllNextLTs();
+    const { error: deleteAllNextLTsError } = await deleteAllNextLTs();
+    if (deleteAllNextLTsError) {
+        return { nextLTs: null, error: deleteAllNextLTsError };
+    }
     const prisma = new PrismaClient();
 
     try {
@@ -30,6 +39,11 @@ export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextL
     }
 }
 
+/**
+ * nextLTテーブルの全てのレコードを削除します。
+ * 
+ * @returns {Promise<{ count: number | null, error: any }>} 削除されたレコードの数とエラー情報を含むPromise
+ */
 const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }> => {
     console.log('start deleteAllNextLTs');
 
@@ -49,6 +63,12 @@ const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }>
     }
 }
 
+/**
+ * 次のLTを取得します。
+ * 次のLTが存在しない場合は、nextLTとerrorの両方がnullとなります。
+ * 
+ * @returns {Promise<{ nextLT: NextLightningTalkWithDetails | null, error: any }>} 次のLTの詳細とエラー情報を含むPromise
+ */
 export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetails | null, error: any }> => {
     console.log('start getNextLT');
 
@@ -82,6 +102,12 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
     }
 }
 
+/**
+ * 指定されたIDのnextLTテーブルのレコードを削除します。
+ * 
+ * @param {number} nextLTId - 削除する次のLTのID
+ * @returns {Promise<{ nextLT: NextLightningTalk | null, error: any }>} 削除されたLTとエラー情報を含むPromise
+ */
 export const deleteNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
     console.log('start deleteNextLT');
 
