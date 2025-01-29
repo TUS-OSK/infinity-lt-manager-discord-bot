@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --watch run src/index.ts",
     "register": "tsx --env-file=.env ./scripts/registerCommands.ts",
+    "delete": "tsx --env-file=.env ./scripts/deleteCommands.ts",
     "prisma-fmt": "bunx prisma-case-format --file prisma/schema.prisma"
   },
   "devDependencies": {
