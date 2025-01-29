@@ -13,6 +13,7 @@ export const interactionCreateHandler = async (interaction: Interaction) => {
                 await command.execute(interaction);
             } catch (error) {
                 console.error('Failed to execute command', error);
+
                 await interaction.editReply({ content: 'Failed to execute command.' });
             }
         } else {
@@ -26,10 +27,10 @@ export const interactionCreateHandler = async (interaction: Interaction) => {
                 await button.onClick(interaction);
             } catch (error) {
                 console.error('Failed to execute button', error);
-                await interaction.editReply({ content: 'Failed to execute button.' });
+                await interaction.editReply({ content: interaction.message.content + '\nFailed to execute button.' });
             }
         } else {
-            await interaction.editReply({ content: 'Unknown button.' });
+            await interaction.editReply({ content: interaction.message.content + '\nUnknown button.' });
         }
     }
 
