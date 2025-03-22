@@ -1,6 +1,16 @@
 import { PrismaClient, State, type LightningTalk } from "@prisma/client";
 
-export const insertLT = async (title: string, speaker: string, ready: boolean, description?: string): Promise<{ lt: LightningTalk | null, error: any }> => {
+/**
+ * Lightning Talkを挿入します。
+ * 挿入可能なのはstateがREADYまたはUNREADYのLTのみであるため、booleanのreadyによってstateを設定します。
+ * 
+ * @param {string} title - Lightning Talkのタイトル
+ * @param {string} speaker - スピーカーの名前
+ * @param {boolean} ready - 準備ができているかどうか
+ * @param {string} description - Lightning Talkの説明
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 挿入されたLightning Talkとエラー情報を含むPromise
+ */
+export const insertLT = async (title: string, speaker: string, ready: boolean, description: string): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start insertLT');
 
     const state: State = ready ? 'READY' : 'UNREADY';
@@ -27,18 +37,26 @@ export const insertLT = async (title: string, speaker: string, ready: boolean, d
     }
 }
 
-
+/**
+ * 指定されたIDのLightning Talkを削除します。
+ * stateがDOINGまたはDONEのLTは削除できません。
+ * 
+ * @param {number} id - 削除するLightning TalkのID
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 削除されたLightning Talkとエラー情報を含むPromise
+ */
 export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start deleteLTById');
 
     const prisma = new PrismaClient();
 
     try {
-        const { lt } = await getLTById(id);
-        if (lt === null) {
-            console.error('LT not found');
-            return { lt: null, error: 'LT not found' };
+        const { lt, error: getError } = await getLTById(id);
+
+        // [WHY] lt===nullのときgetErrorは必ず存在するはずだが、後の処理でtype errorが出るため、明示的にチェック
+        if (getError || !lt) {
+            return { lt: null, error: getError };
         }
+
         // validation
         // DOING, DONEのLTは削除できない
         if (lt.state === 'DOING' || lt.state === 'DONE') {
@@ -64,22 +82,23 @@ export const deleteLTById = async (id: number): Promise<{ lt: LightningTalk | nu
     }
 }
 
-
-export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+/**
+ * 指定されたIDのLightning Talkを取得します。
+ * 
+ * @param {number} id - 取得するLightning TalkのID
+ * @returns {Promise<{ lt: LightningTalk, error: null } | { lt: null, error: NonNullable<any> }>} 指定されたIDのLightning Talkとエラー情報を含むPromise
+ */
+export const getLTById = async (id: number): Promise<{ lt: LightningTalk, error: null } | { lt: null, error: NonNullable<any> }> => {
     console.log('start getLTById');
 
     const prisma = new PrismaClient();
 
     try {
-        const lt = await prisma.lightningTalk.findUnique({
+        const lt = await prisma.lightningTalk.findUniqueOrThrow({
             where: {
                 id
             }
         });
-        console.log('getLTById', lt);
-        if (!lt) {
-            return { lt: null, error: 'LT not found' };
-        }
         return { lt, error: null };
     } catch (error: any) {
         console.error('Failed to getLTById', error);
@@ -90,7 +109,17 @@ export const getLTById = async (id: number): Promise<{ lt: LightningTalk | null,
     }
 }
 
-
+/**
+ * 指定されたIDのLightning Talkの状態を更新します。
+ * 以下の状態遷移のみ許容します。
+ * - UNREADY <-> READY
+ * - READY -> DOING
+ * - DOING -> DONE
+ *  
+ * @param {number} id - 更新するLightning TalkのID
+ * @param {State} state - 新しい状態
+ * @returns {Promise<{ lt: LightningTalk | null, error: any }>} 更新されたLightning Talkとエラー情報を含むPromise
+ */
 export const updateLTStateById = async (id: number, state: State): Promise<{ lt: LightningTalk | null, error: any }> => {
     console.log('start updateStateById');
 
@@ -147,30 +176,57 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
     }
 }
 
+/**
+ * 次に発表する準備ができているLightning Talkのリストを取得します。
+ * 以下の順で、speakerの重複がないように取得します。
+ * 1. 発表済みの回数が少ない順
+ * 2. 更新日時が古い順
+ * 
+ * @param {number} limit - 取得するLightning Talkの最大数
+ * @returns {Promise<{ lts: LightningTalk[] | null, error: any }>} 取得されたLightning Talkのリストとエラー情報を含むPromise
+ */
 export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTalk[] | null, error: any }> => {
     console.log('start getNextLTsList');
 
     const prisma = new PrismaClient();
 
     try {
-        const sortedReadyLTs: LightningTalk[] = await prisma.$queryRaw`
-        SELECT lt.*
-        FROM "lightning_talks" lt
-        INNER JOIN (
-            -- 各speakerのREADYなLTの中で最も古いものを取得
-            SELECT speaker, MIN("updated_at") as min_updated_at
-            FROM "lightning_talks"
-            WHERE state = 'READY'
-            GROUP BY speaker
-        ) sub ON lt.speaker = sub.speaker AND lt."updated_at" = sub.min_updated_at
-        ORDER BY (
-            -- 発表済みのLTの数が少ない順に並べる
-            SELECT COUNT(*)
-            FROM "lightning_talks" lt2
-            WHERE lt2.speaker = lt.speaker AND lt2.state = 'DONE'
-        ) ASC
-        LIMIT ${limit}
-    `;
+
+        const readyLTs = await prisma.lightningTalk.findMany({
+            where: {
+                state: 'READY'
+            },
+            orderBy: {
+                updatedAt: 'asc'
+            }
+        });
+
+        const speakerDoneCounts = await prisma.lightningTalk.groupBy({
+            by: ['speaker'],
+            where: {
+                state: 'DONE'
+            },
+            _count: {
+                _all: true
+            }
+        });
+
+        // [WHY] 発表済みLTの順でソートするためのMap
+        const speakerDoneCountMap = new Map(speakerDoneCounts.map(item => [item.speaker, item._count._all]));
+        const speakerSet = new Set<string>();   // filter用のSet
+
+        const sortedReadyLTs = readyLTs
+            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. updatedAtが古いものを採用）
+            .filter(lt => {
+                if (speakerSet.has(lt.speaker)) {
+                    return false;
+                }
+                speakerSet.add(lt.speaker);
+                return true;
+            })
+            .sort((a, b) => (speakerDoneCountMap.get(a.speaker) || 0) - (speakerDoneCountMap.get(b.speaker) || 0))
+            .slice(0, limit);
+
         console.log('getNextLTsList', sortedReadyLTs);
 
         return { lts: sortedReadyLTs, error: null };

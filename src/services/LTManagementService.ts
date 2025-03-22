@@ -1,63 +1,63 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, CommandInteraction } from "discord.js";
+import { ActionRowBuilder } from "discord.js";
+import type { ButtonBuilder, ButtonInteraction, Client, BaseMessageOptions, Message } from "discord.js";
 import { deleteLTById, insertLT, updateLTStateById } from "../tables/lightningTalkTable";
-import { deleteNotificationMessageById, notifyLTRegistration } from "./LTNotificationService";
+import { notifyLTRegistration } from "./LTNotificationService";
+import { strikethroughTextMessage } from "./messageEditingService";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { deleteNotificationMessage } from "../tables/notificationMessageTable";
 import { readyLTButton } from "../buttons/readyLTButton";
 import { unreadyLTButton } from "../buttons/unreadyLTButtons";
 
-export const registerLTByCommand = async (interaction: CommandInteraction) => {
+
+/**
+ * LTを登録する関数
+ * 
+ * @param client - クライアントオブジェクト
+ * @param title - LTのタイトル
+ * @param ready - 発表準備ができているかどうかのフラグ
+ * @param userId - ユーザーID
+ * @param description - LTの説明（省略可能）
+ * @returns 返信すべきメッセージオプションを含むPromise
+ */
+export const handleLTRegistration = async (client: Client, title: string, ready: boolean, userId: string, description: string = ''): Promise<BaseMessageOptions> => {
     console.log('registerLTByCommand start');
-
-    const title = interaction.options.get('title')?.value;
-    const ready = interaction.options.get('ready')?.value;
-    if (title === undefined || ready === undefined) {
-        console.error('title or ready is empty\n title: ' + title + ', ready: ' + ready);
-        await interaction.editReply({ content: 'Failed to register LT' });
-        return;
-    }
-
-    const description = interaction.options.get('description')?.value || '';
 
     const { lt, error } = await insertLT(
         title as string,
-        interaction.user.id,
+        userId as string,
         ready as boolean,
         description as string
     )
 
     if (error || !lt) {
         console.error('insert error', error);
-        await interaction.editReply({ content: 'Failed to register LT' });
-        return;
-    } else {
-        const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
-
-        await interaction.editReply({
-            content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
-            components: [row],
-        });
+        return { content: 'Failed to register LT' };
     }
 
-    await notifyLTRegistration(interaction.client, lt);
+    await notifyLTRegistration(client, lt);
+
+    const row = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(deleteLTButton.create(lt.id.toString()))
+        .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
 
     console.log('registerLTByCommand end');
+    return {
+        content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
+        components: [row],
+    };
 }
 
+/**
+ * LTを削除する関数
+ * 
+ * @param client - クライアントオブジェクト
+ * @param ltId - 削除するLTのID
+ * @param messageContent - 元のメッセージの内容
+ * @returns 返信すべきメッセージオプションを含むPromise
+ */
 
-export const deleteLTByButton = async (interaction: ButtonInteraction) => {
-    console.log('deleteLTByButton start');
-
-    // この時点でltIdは「delete-lt-<ltId>」の形式になっているかどうかを確認する
-    if (!interaction.customId.startsWith('delete-lt-')) {
-        console.error('ltId is empty');
-        await interaction.editReply({ content: 'Failed to delete LT' });
-        return;
-    }
-
-    const ltId = parseInt(interaction.customId.split('-')[2]);
+export const handleLTDeletion = async (client: Client, ltId: number, messageContent: string): Promise<BaseMessageOptions> => {
+    console.log('deleteLTInteraction start');
 
     // 先に子要素である通知メッセージを削除し、message idを取得しておく
     const { notificationMessage } = await deleteNotificationMessage(ltId);
@@ -65,21 +65,18 @@ export const deleteLTByButton = async (interaction: ButtonInteraction) => {
     const { lt, error: ltError } = await deleteLTById(ltId);
     if (ltError || !lt) {
         console.error('delete error', ltError);
-        await interaction.editReply({ content: 'Failed to delete LT' });
-        return;
-    } else {
-        const newContent = '削除済み\n' + interaction.message.content.split('\n').map((line) => '~~' + line + '~~').join('\n');
-        console.log('newContent', newContent);
-        await interaction.editReply({ content: newContent, components: [] });
-
-        if (notificationMessage) {
-            await deleteNotificationMessageById(interaction.client, notificationMessage.messageId);
-        }
+        return { content: messageContent + '\nFailed to delete LT due to DB layer error' };
+    }
+    if (notificationMessage) {
+        await strikethroughTextMessage(client, notificationMessage.messageId, { footer: '（削除済）' });
     }
 
-    console.log('deleteLTByButton end');
+    // [WHY] strikethroughTextMessageで編集してもよさそうだが、messageがephemeralであるためinteractionが必要
+    const newContent = messageContent.split('\n').map((line) => '~~' + line + '~~').join('\n') + '\n（削除済）';
+    console.log('newContent', newContent);
+    console.log('deleteLTInteraction end');
+    return ({ content: newContent, components: [] });
 }
-
 
 export const switchLTReadyStateByButton = async (interaction: ButtonInteraction, isCurrentlyReady: boolean) => {
     console.log('switchReadyState start');

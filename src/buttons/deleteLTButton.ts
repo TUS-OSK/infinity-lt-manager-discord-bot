@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
-import { deleteLTByButton } from "../services/LTManagementService";
+import { handleLTDeletion } from "../services/LTManagementService";
 
 export const deleteLTButton: Button = {
     create: (ltId: string) => {
@@ -14,6 +14,15 @@ export const deleteLTButton: Button = {
     },
     onClick: async (interaction) => {
         await interaction.deferUpdate();
-        await deleteLTByButton(interaction);
+
+        const ltId = interaction.customId.split('-')[2];
+        if (!ltId || isNaN(parseInt(ltId))) {
+            console.error('ltId is empty');
+            await interaction.editReply({ content: interaction.message.content + '\nFailed to delete LT due to parsing error' });
+            return;
+        }
+
+        const responseMessageOptions = await handleLTDeletion(interaction.client, parseInt(ltId), interaction.message.content);
+        await interaction.editReply(responseMessageOptions);
     }
 }
