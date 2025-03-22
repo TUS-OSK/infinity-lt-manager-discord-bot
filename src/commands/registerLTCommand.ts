@@ -1,7 +1,7 @@
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
-import { registerLTInteraction } from '../services/LTManagementService';
+import { handleLTRegistration } from '../services/LTManagementService';
 
 export const registerLTCommand: Command = {
     data: new SlashCommandBuilder()
@@ -27,7 +27,7 @@ export const registerLTCommand: Command = {
             return;
         }
 
-        const responseMessageOptions = await registerLTInteraction(interaction.client, title, ready, interaction.user.id, description);
+        const responseMessageOptions = await handleLTRegistration(interaction.client, title, ready, interaction.user.id, description);
         await interaction.editReply(responseMessageOptions);
     }
 

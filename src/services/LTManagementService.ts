@@ -19,7 +19,7 @@ import { unreadyLTButton } from "../buttons/unreadyLTButtons";
  * @param description - LTの説明（省略可能）
  * @returns 返信すべきメッセージオプションを含むPromise
  */
-export const registerLTInteraction = async (client: Client, title: string, ready: boolean, userId: string, description: string = ''): Promise<BaseMessageOptions> => {
+export const handleLTRegistration = async (client: Client, title: string, ready: boolean, userId: string, description: string = ''): Promise<BaseMessageOptions> => {
     console.log('registerLTByCommand start');
 
     const { lt, error } = await insertLT(
@@ -56,7 +56,7 @@ export const registerLTInteraction = async (client: Client, title: string, ready
  * @returns 返信すべきメッセージオプションを含むPromise
  */
 
-export const deleteLTInteraction = async (client: Client, ltId: number, messageContent: string): Promise<BaseMessageOptions> => {
+export const handleLTDeletion = async (client: Client, ltId: number, messageContent: string): Promise<BaseMessageOptions> => {
     console.log('deleteLTInteraction start');
 
     // 先に子要素である通知メッセージを削除し、message idを取得しておく

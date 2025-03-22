@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle } from "discord.js";
 import type { Button } from "../types";
-import { deleteLTInteraction } from "../services/LTManagementService";
+import { handleLTDeletion } from "../services/LTManagementService";
 
 export const deleteLTButton: Button = {
     create: (ltId: string) => {
@@ -22,7 +22,7 @@ export const deleteLTButton: Button = {
             return;
         }
 
-        const responseMessageOptions = await deleteLTInteraction(interaction.client, parseInt(ltId), interaction.message.content);
+        const responseMessageOptions = await handleLTDeletion(interaction.client, parseInt(ltId), interaction.message.content);
         await interaction.editReply(responseMessageOptions);
     }
 }
