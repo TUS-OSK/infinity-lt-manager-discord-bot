@@ -85,7 +85,17 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
         return;
     }
 
-    const { nextLTs, error: insertNextLTsError } = await insertNextLTs(lts.map((lt) => lt.id));
+    function shuffle(array: any[]) {
+        for (let i = array.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1)); // 0 から i のランダムなインデックス
+            [array[i], array[j]] = [array[j], array[i]]; // 要素を入れ替えます
+        }
+        return array;
+    }
+
+    const shuffledLTs = shuffle(lts);
+
+    const { nextLTs, error: insertNextLTsError } = await insertNextLTs(shuffledLTs.map((lt) => lt.id));
 
     if (insertNextLTsError || !nextLTs) {
         console.error('Failed to insert next LTs', insertNextLTsError);
