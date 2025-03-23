@@ -25,7 +25,7 @@ export const editLTCommand: Command = {
             .addComponents(select);
 
         await interaction.editReply({
-            content: 'Choose your starter!',
+            content: '編集したいLTを選択してください',
             components: [row],
         });
     }

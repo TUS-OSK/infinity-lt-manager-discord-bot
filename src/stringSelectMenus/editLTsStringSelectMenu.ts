@@ -4,6 +4,8 @@ import { getLTById, getLTsBySpeaker } from "../tables/lightningTalkTable";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { readyLTButton } from "../buttons/readyLTButton";
 import { unreadyLTButton } from "../buttons/unreadyLTButtons";
+import { moveNextLTButton } from "../buttons/moveNextLTButton";
+import { MoveToFrontLTButton } from "../buttons/moveToFrontLTButton";
 
 
 export const editLTsStringSelectMenu: StringSelectMenu = {
@@ -50,7 +52,8 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
 
         const row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
+            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()))
+            .addComponents(MoveToFrontLTButton.create(lt.id.toString()))
 
         await interaction.editReply({
             content: ltInfoString,
