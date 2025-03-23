@@ -242,7 +242,7 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
 }
 
 
-export const getLTsBySpeaker = async (speaker: string): Promise<{ lts: LightningTalk[] | null, error: any }> => {
+export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = false): Promise<{ lts: LightningTalk[] | null, error: any }> => {
     console.log('start getLTsBySpeaker');
 
     const prisma = new PrismaClient();
@@ -250,7 +250,12 @@ export const getLTsBySpeaker = async (speaker: string): Promise<{ lts: Lightning
     try {
         const lts = await prisma.lightningTalk.findMany({
             where: {
-                speaker
+                speaker,
+                state: includeDone ? {
+                    not: 'DOING'
+                } : {
+                    notIn: ['DONE', 'DOING']
+                }
             }
         });
 
