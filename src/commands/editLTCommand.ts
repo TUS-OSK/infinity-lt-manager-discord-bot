@@ -1,6 +1,7 @@
-import { ActionRowBuilder, MessageFlags, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from 'discord.js';
+import { ActionRowBuilder, MessageFlags, StringSelectMenuBuilder } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
+import { myLTsStringSelectMenu } from '../stringSelectMenus/myLTsStringSelectMenu';
 
 
 export const editLTCommand: Command = {
@@ -14,23 +15,7 @@ export const editLTCommand: Command = {
 
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        const select = new StringSelectMenuBuilder()
-            .setCustomId('starter')
-            .setPlaceholder('Make a selection!')
-            .addOptions(
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Bulbasaur')
-                    .setDescription('The dual-type Grass/Poison Seed Pokémon.')
-                    .setValue('bulbasaur'),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Charmander')
-                    .setDescription('The Fire-type Lizard Pokémon.')
-                    .setValue('charmander'),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Squirtle')
-                    .setDescription('The Water-type Tiny Turtle Pokémon.')
-                    .setValue('squirtle'),
-            );
+        const select = myLTsStringSelectMenu.create(interaction.user.id);
 
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(select);

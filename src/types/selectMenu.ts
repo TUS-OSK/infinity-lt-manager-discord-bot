@@ -1,7 +1,7 @@
-import type { AnySelectMenuInteraction, APISelectMenuComponent, BaseSelectMenuBuilder } from "discord.js";
+import type { StringSelectMenuInteraction, StringSelectMenuBuilder } from "discord.js";
 
-export type SelectMenu = {
-    create: (...args: any[]) => BaseSelectMenuBuilder<APISelectMenuComponent>;
-    isThisSelectMenu: (Interaction: AnySelectMenuInteraction) => boolean;
-    onSelect: (interaction: AnySelectMenuInteraction) => Promise<void>;
+export type StringSelectMenu = {
+    create: (...args: any[]) => StringSelectMenuBuilder;
+    isThisSelectMenu: (Interaction: StringSelectMenuInteraction) => boolean;
+    onSelect: (interaction: StringSelectMenuInteraction) => Promise<void>;
 };
