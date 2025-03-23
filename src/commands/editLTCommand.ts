@@ -1,7 +1,7 @@
 import { ActionRowBuilder, MessageFlags, StringSelectMenuBuilder } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
-import { myLTsStringSelectMenu } from '../stringSelectMenus/myLTsStringSelectMenu';
+import { editLTsStringSelectMenu } from '../stringSelectMenus/editLTsStringSelectMenu';
 
 
 export const editLTCommand: Command = {
@@ -15,7 +15,7 @@ export const editLTCommand: Command = {
 
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        const select = await myLTsStringSelectMenu.create(interaction.user.id);
+        const select = await editLTsStringSelectMenu.create(interaction.user.id);
         if (!select) {
             await interaction.editReply('Failed to get your LTs');
             return;

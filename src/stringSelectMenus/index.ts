@@ -1,8 +1,8 @@
 import type { StringSelectMenu } from "../types";
-import { myLTsStringSelectMenu } from "./myLTsStringSelectMenu"
+import { editLTsStringSelectMenu } from "./editLTsStringSelectMenu"
 
 const stringSelectMenus : StringSelectMenu[] = [
-    myLTsStringSelectMenu,
+    editLTsStringSelectMenu,
 ];
 
 export default stringSelectMenus;

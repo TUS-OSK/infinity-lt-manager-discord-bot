@@ -3,7 +3,7 @@ import type { StringSelectMenu } from "../types";
 import { getLTsBySpeaker } from "../tables/lightningTalkTable";
 
 
-export const myLTsStringSelectMenu: StringSelectMenu = {
+export const editLTsStringSelectMenu: StringSelectMenu = {
     create: async (discordUserId: string) => {
         const { lts, error } = await getLTsBySpeaker(discordUserId);
         if (error) {
@@ -34,7 +34,7 @@ export const myLTsStringSelectMenu: StringSelectMenu = {
     },
 
     onSelect: async (interaction) => {
-        await interaction.deferReply();
-        await interaction.editReply('You selected ' + interaction.values[0]);
+        console.log(interaction.values);
+        await interaction.editReply('編集するLTを選択しました: ' + interaction.values[0]);
     }
 }
