@@ -273,3 +273,31 @@ export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = fa
     }
 }
 
+export const getMaxPriorityLT = async (discordUserId: string): Promise<number> => {
+    console.log('start getMaxPriorityLT');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lts = await prisma.lightningTalk.findMany({
+            where: {
+                speaker: discordUserId
+            },
+            orderBy: {
+                priority: 'desc'
+            }
+        });
+
+        console.log('getMaxPriorityLT', lts);
+
+        return lts.length > 0 ? lts[0].priority : 0;
+
+    } catch (error: any) {
+        console.error('Failed to getMaxPriorityLT', error);
+        return 0;
+
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getMaxPriorityLT');
+    }
+}
