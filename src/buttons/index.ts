@@ -3,6 +3,7 @@ import { deleteLTButton } from './deleteLTButton';
 import { moveNextLTButton } from './moveNextLTButton';
 import { readyLTButton } from './readyLTButton';
 import { unreadyLTButton } from './unreadyLTButtons';
+import { MoveToFrontLTButton } from './moveToFrontLTButton';
 
 
 const buttons: Button[] = [
@@ -10,6 +11,7 @@ const buttons: Button[] = [
     readyLTButton,
     unreadyLTButton,
     moveNextLTButton,
+    MoveToFrontLTButton
 ];
 
 export default buttons;
