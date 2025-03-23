@@ -22,7 +22,7 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
 
         return new StringSelectMenuBuilder()
             .setCustomId(`my-lts-${discordUserId}`)
-            .setPlaceholder('編集したいLTを選択してください')
+            .setPlaceholder('発表順に並んでいます')
             .addOptions(
                 lts.map(lt => {
                     return new StringSelectMenuOptionBuilder()

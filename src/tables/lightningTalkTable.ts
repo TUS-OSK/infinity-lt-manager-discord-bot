@@ -260,7 +260,7 @@ export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = fa
                 }
             },
             orderBy: [
-                { state: 'asc' },
+                { state: 'desc' },
                 { priority: 'desc' }
             ]
         });
