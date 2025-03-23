@@ -51,6 +51,7 @@ model NextLightningTalk {
   lightningTalk   LightningTalk @relation(fields: [lightningTalkId], references: [id], onDelete: Cascade)
   lightningTalkId Int           @unique @map("lightning_talk_id")
   order           Int           @unique
+  done            Boolean       @default(false)
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
