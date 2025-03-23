@@ -86,6 +86,9 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
                     }
                 }
             },
+            where: {
+                done: false
+            },
             orderBy: {
                 order: 'asc'
             }
