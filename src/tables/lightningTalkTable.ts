@@ -301,3 +301,33 @@ export const getMaxPriorityLT = async (discordUserId: string): Promise<number> =
         console.log('end getMaxPriorityLT');
     }
 }
+
+
+export const updatePriority = async (ltId: number, priority: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+    console.log('start updatePriority');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lt = await prisma.lightningTalk.update({
+            where: {
+                id: ltId
+            },
+            data: {
+                priority
+            }
+        });
+
+        console.log('updatePriority', lt);
+
+        return { lt, error: null };
+
+    } catch (error: any) {
+        console.error('Failed to updatePriority', error);
+        return { lt: null, error };
+
+    } finally {
+        await prisma.$disconnect();
+        console.log('end updatePriority');
+    }
+}
