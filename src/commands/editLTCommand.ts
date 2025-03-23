@@ -15,7 +15,11 @@ export const editLTCommand: Command = {
 
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        const select = myLTsStringSelectMenu.create(interaction.user.id);
+        const select = await myLTsStringSelectMenu.create(interaction.user.id);
+        if (!select) {
+            await interaction.editReply('Failed to get your LTs');
+            return;
+        }
 
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(select);

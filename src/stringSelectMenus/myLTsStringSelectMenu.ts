@@ -1,25 +1,30 @@
-import { StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, type RestOrArray } from "discord.js";
 import type { StringSelectMenu } from "../types";
+import { getLTsBySpeaker } from "../tables/lightningTalkTable";
 
 
 export const myLTsStringSelectMenu: StringSelectMenu = {
-    create: (discordUserId: string): StringSelectMenuBuilder => {
+    create: async (discordUserId: string) => {
+        const { lts, error } = await getLTsBySpeaker(discordUserId);
+        if (error) {
+            console.error('Failed to get LTs by speaker', error);
+            return null;
+        }
+
+        if (!lts) {
+            console.error('LTs not found');
+            return null;
+        }
+
         return new StringSelectMenuBuilder()
             .setCustomId(`my-lts-${discordUserId}`)
-            .setPlaceholder('Make a selection!')
+            .setPlaceholder('編集したいLTを選択してください')
             .addOptions(
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Bulbasaur')
-                    .setDescription('The dual-type Grass/Poison Seed Pokémon.')
-                    .setValue('bulbasaur'),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Charmander')
-                    .setDescription('The Fire-type Lizard Pokémon.')
-                    .setValue('charmander'),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Squirtle')
-                    .setDescription('The Water-type Tiny Turtle Pokémon.')
-                    .setValue('squirtle'),
+                lts.map(lt => {
+                    return new StringSelectMenuOptionBuilder()
+                        .setLabel(lt.title)
+                        .setValue(lt.id.toString())
+                })
             );
     },
 
