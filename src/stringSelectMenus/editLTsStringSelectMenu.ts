@@ -46,11 +46,11 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
             return;
         }
 
-        const ltInfoString = `タイトル: ${lt.title}\n状態: ${lt.state === "READY" ? "準備中" : "終了"}\n説明: ${lt.description}`;
+        const ltInfoString = `タイトル: ${lt.title}\n状態: ${lt.state === "READY" ? "準備中" : "発表可能"}\n説明: ${lt.description}`;
 
         const row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(lt.state === "READY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
+            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
 
         await interaction.editReply({
             content: ltInfoString,
