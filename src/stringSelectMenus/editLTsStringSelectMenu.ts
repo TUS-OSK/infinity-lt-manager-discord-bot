@@ -1,6 +1,9 @@
-import { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, type RestOrArray } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, type RestOrArray } from "discord.js";
 import type { StringSelectMenu } from "../types";
-import { getLTsBySpeaker } from "../tables/lightningTalkTable";
+import { getLTById, getLTsBySpeaker } from "../tables/lightningTalkTable";
+import { deleteLTButton } from "../buttons/deleteLTButton";
+import { readyLTButton } from "../buttons/readyLTButton";
+import { unreadyLTButton } from "../buttons/unreadyLTButtons";
 
 
 export const editLTsStringSelectMenu: StringSelectMenu = {
@@ -34,7 +37,25 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
     },
 
     onSelect: async (interaction) => {
-        console.log(interaction.values);
-        await interaction.editReply('編集するLTを選択しました: ' + interaction.values[0]);
+        const ltId = interaction.values[0];
+        console.log('Selected LT', ltId);
+
+        const { lt, error } = await getLTById(parseInt(ltId));
+        if (error || !lt) {
+            console.error('Failed to get LT by ID', error);
+            return;
+        }
+
+        const ltInfoString = `タイトル: ${lt.title}\n状態: ${lt.state === "READY" ? "準備中" : "終了"}\n説明: ${lt.description}`;
+
+        const row = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(deleteLTButton.create(lt.id.toString()))
+            .addComponents(lt.state === "READY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
+
+        await interaction.editReply({
+            content: ltInfoString,
+            components: [row],
+        });
+
     }
 }
