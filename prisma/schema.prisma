@@ -16,6 +16,7 @@ model LightningTalk {
   title       String
   description String   @default("")
   state       State    @default(UNREADY)
+  priority    Int      @default(0)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
