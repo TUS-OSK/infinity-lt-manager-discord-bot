@@ -180,7 +180,8 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
  * 次に発表する準備ができているLightning Talkのリストを取得します。
  * 以下の順で、speakerの重複がないように取得します。
  * 1. 発表済みの回数が少ない順
- * 2. 更新日時が古い順
+ * 2. priorityが高い順
+ * 3. 更新日時が古い順
  * 
  * @param {number} limit - 取得するLightning Talkの最大数
  * @returns {Promise<{ lts: LightningTalk[] | null, error: any }>} 取得されたLightning Talkのリストとエラー情報を含むPromise
@@ -197,6 +198,7 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
                 state: 'READY'
             },
             orderBy: {
+                priority: 'desc',
                 updatedAt: 'asc'
             }
         });
@@ -216,7 +218,7 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
         const speakerSet = new Set<string>();   // filter用のSet
 
         const sortedReadyLTs = readyLTs
-            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. updatedAtが古いものを採用）
+            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. priorityが高い → updatedAtが古いものを採用）
             .filter(lt => {
                 if (speakerSet.has(lt.speaker)) {
                     return false;
