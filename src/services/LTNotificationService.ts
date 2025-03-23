@@ -5,7 +5,7 @@ import { getNextReadyLTs, updateLTStateById } from "../tables/lightningTalkTable
 import { deleteAllNextLTs, getAllDoneNextLTs, getNextLT, insertNextLTs, updateDoneNextLT } from "../tables/nextLightningTalkTable";
 import { moveNextLTButton } from "../buttons/moveNextLTButton";
 
-const { NOTIFICATION_CHANNEL_ID, ROLE_ID } = process.env;
+const { NOTIFICATION_CHANNEL_ID, TIMELINE_CHANNEL_ID, ROLE_ID } = process.env;
 
 
 export const notifyLTRegistration = async (client: Client, lt: LightningTalk) => {
@@ -118,7 +118,7 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
         ...lts.map((lt) => `「${lt.title}」 発表者：${userMention(lt.speaker)}`),
     ].join('\n');
 
-    const channel = interaction.client.channels.cache.get(NOTIFICATION_CHANNEL_ID) as TextChannel;
+    const channel = interaction.client.channels.cache.get(TIMELINE_CHANNEL_ID) as TextChannel;
     console.log('channel', channel.name);
 
     const sendMessage = await channel?.send(notificationMessageContent);
