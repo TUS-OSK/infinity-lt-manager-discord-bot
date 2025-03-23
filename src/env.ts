@@ -7,6 +7,7 @@ const environmentVariablesSchema = z.object({
     GUILD_ID: nonEmptyString,
     ROLE_ID: nonEmptyString,
     NOTIFICATION_CHANNEL_ID: nonEmptyString,
+    TIMELINE_CHANNEL_ID: nonEmptyString,
     ADMIN_USER_ID: nonEmptyString,
 })
 
