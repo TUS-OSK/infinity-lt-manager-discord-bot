@@ -4,6 +4,7 @@ import { getLTById, getLTsBySpeaker } from "../tables/lightningTalkTable";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { readyLTButton } from "../buttons/readyLTButton";
 import { unreadyLTButton } from "../buttons/unreadyLTButtons";
+import { MoveToFrontLTButton } from "../buttons/moveToFrontLTButton";
 
 
 export const editLTsStringSelectMenu: StringSelectMenu = {
@@ -25,7 +26,7 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
             .addOptions(
                 lts.map(lt => {
                     return new StringSelectMenuOptionBuilder()
-                        .setLabel(lt.title)
+                        .setLabel(`「${lt.title}」 (${lt.state === "READY" ? "準備中" : "発表可能"}): 優先度${lt.priority}`)
                         .setValue(lt.id.toString())
                 })
             );
@@ -50,7 +51,8 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
 
         const row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
+            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()))
+            .addComponents(MoveToFrontLTButton.create(lt.id.toString()))
 
         await interaction.editReply({
             content: ltInfoString,

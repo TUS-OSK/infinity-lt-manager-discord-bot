@@ -17,7 +17,7 @@ export const editLTCommand: Command = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const select = await editLTsStringSelectMenu.create(interaction.user.id);
         if (!select) {
-            await interaction.editReply('Failed to get your LTs');
+            await interaction.editReply('あなたのLTが存在しません');
             return;
         }
 
@@ -25,7 +25,7 @@ export const editLTCommand: Command = {
             .addComponents(select);
 
         await interaction.editReply({
-            content: 'Choose your starter!',
+            content: '編集したいLTを選択してください',
             components: [row],
         });
     }

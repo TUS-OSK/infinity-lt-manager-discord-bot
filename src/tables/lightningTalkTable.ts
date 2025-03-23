@@ -180,7 +180,8 @@ export const updateLTStateById = async (id: number, state: State): Promise<{ lt:
  * 次に発表する準備ができているLightning Talkのリストを取得します。
  * 以下の順で、speakerの重複がないように取得します。
  * 1. 発表済みの回数が少ない順
- * 2. 更新日時が古い順
+ * 2. priorityが高い順
+ * 3. 更新日時が古い順
  * 
  * @param {number} limit - 取得するLightning Talkの最大数
  * @returns {Promise<{ lts: LightningTalk[] | null, error: any }>} 取得されたLightning Talkのリストとエラー情報を含むPromise
@@ -196,9 +197,10 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
             where: {
                 state: 'READY'
             },
-            orderBy: {
-                updatedAt: 'asc'
-            }
+            orderBy: [
+                { priority: 'desc' },
+                { updatedAt: 'asc' }
+            ]
         });
 
         const speakerDoneCounts = await prisma.lightningTalk.groupBy({
@@ -216,7 +218,7 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
         const speakerSet = new Set<string>();   // filter用のSet
 
         const sortedReadyLTs = readyLTs
-            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. updatedAtが古いものを採用）
+            // [WHY] 同じスピーカーが複数回発表しないようにするためのfilter（最初に現れたものを採用 i.e. priorityが高い → updatedAtが古いものを採用）
             .filter(lt => {
                 if (speakerSet.has(lt.speaker)) {
                     return false;
@@ -256,7 +258,11 @@ export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = fa
                 } : {
                     notIn: ['DONE', 'DOING']
                 }
-            }
+            },
+            orderBy: [
+                { state: 'asc' },
+                { priority: 'desc' }
+            ]
         });
 
         console.log('getLTsBySpeaker', lts);
@@ -273,3 +279,61 @@ export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = fa
     }
 }
 
+export const getMaxPriorityLT = async (discordUserId: string): Promise<number> => {
+    console.log('start getMaxPriorityLT');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lts = await prisma.lightningTalk.findMany({
+            where: {
+                speaker: discordUserId
+            },
+            orderBy: {
+                priority: 'desc'
+            }
+        });
+
+        console.log('getMaxPriorityLT', lts);
+
+        return lts.length > 0 ? lts[0].priority : 0;
+
+    } catch (error: any) {
+        console.error('Failed to getMaxPriorityLT', error);
+        return 0;
+
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getMaxPriorityLT');
+    }
+}
+
+
+export const updatePriority = async (ltId: number, priority: number): Promise<{ lt: LightningTalk | null, error: any }> => {
+    console.log('start updatePriority');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const lt = await prisma.lightningTalk.update({
+            where: {
+                id: ltId
+            },
+            data: {
+                priority
+            }
+        });
+
+        console.log('updatePriority', lt);
+
+        return { lt, error: null };
+
+    } catch (error: any) {
+        console.error('Failed to updatePriority', error);
+        return { lt: null, error };
+
+    } finally {
+        await prisma.$disconnect();
+        console.log('end updatePriority');
+    }
+}
