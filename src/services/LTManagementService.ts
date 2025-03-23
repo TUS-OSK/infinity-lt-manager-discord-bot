@@ -36,14 +36,9 @@ export const handleLTRegistration = async (client: Client, title: string, ready:
 
     await notifyLTRegistration(client, lt);
 
-    const row = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(deleteLTButton.create(lt.id.toString()))
-        .addComponents(ready ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()));
-
     console.log('registerLTByCommand end');
     return {
         content: `以下のLTを登録しました！\n 「${lt.title}」（${(ready ? '発表可能' : '準備中')}）${lt.description && "\n 概要: " + lt.description}`,
-        components: [row],
     };
 }
 
