@@ -4,7 +4,6 @@ import { getLTById, getLTsBySpeaker } from "../tables/lightningTalkTable";
 import { deleteLTButton } from "../buttons/deleteLTButton";
 import { readyLTButton } from "../buttons/readyLTButton";
 import { unreadyLTButton } from "../buttons/unreadyLTButtons";
-import { moveNextLTButton } from "../buttons/moveNextLTButton";
 import { MoveToFrontLTButton } from "../buttons/moveToFrontLTButton";
 
 
@@ -27,7 +26,7 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
             .addOptions(
                 lts.map(lt => {
                     return new StringSelectMenuOptionBuilder()
-                        .setLabel(lt.title)
+                        .setLabel(`「${lt.title}」 (${lt.state === "READY" ? "準備中" : "発表可能"}): 優先度${lt.priority}`)
                         .setValue(lt.id.toString())
                 })
             );

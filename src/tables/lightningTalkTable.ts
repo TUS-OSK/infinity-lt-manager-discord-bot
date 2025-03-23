@@ -197,10 +197,10 @@ export const getNextReadyLTs = async (limit: number): Promise<{ lts: LightningTa
             where: {
                 state: 'READY'
             },
-            orderBy: {
-                priority: 'desc',
-                updatedAt: 'asc'
-            }
+            orderBy: [
+                { priority: 'desc' },
+                { updatedAt: 'asc' }
+            ]
         });
 
         const speakerDoneCounts = await prisma.lightningTalk.groupBy({
@@ -258,7 +258,11 @@ export const getLTsBySpeaker = async (speaker: string, includeDone: boolean = fa
                 } : {
                     notIn: ['DONE', 'DOING']
                 }
-            }
+            },
+            orderBy: [
+                { state: 'asc' },
+                { priority: 'desc' }
+            ]
         });
 
         console.log('getLTsBySpeaker', lts);

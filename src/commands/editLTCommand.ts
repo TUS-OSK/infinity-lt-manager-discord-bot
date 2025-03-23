@@ -17,7 +17,7 @@ export const editLTCommand: Command = {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         const select = await editLTsStringSelectMenu.create(interaction.user.id);
         if (!select) {
-            await interaction.editReply('Failed to get your LTs');
+            await interaction.editReply('あなたのLTが存在しません');
             return;
         }
 
