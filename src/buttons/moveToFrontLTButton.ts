@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonComponent, ButtonStyle, type MessageActionRowComponent } from "discord.js";
 import type { Button } from "../types";
 import { getMaxPriorityLT, updatePriority } from "../tables/lightningTalkTable";
 
@@ -29,6 +29,10 @@ export const MoveToFrontLTButton: Button = {
             await interaction.editReply({ content: interaction.message.content + '\nFailed to change priority' });
             return;
         }
-        await interaction.editReply({ content: interaction.message.content + '\nLTの優先度を変更し、先頭に移動しました' });
+
+        await interaction.editReply({
+            content: '先頭に移動しました',
+            components: []
+        });
     }
 }
