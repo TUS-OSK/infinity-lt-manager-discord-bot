@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, CommandInteraction, roleMention, userM
 import type { LightningTalk } from "@prisma/client";
 import { insertNotificationMessage } from "../tables/notificationMessageTable";
 import { getNextReadyLTs, updateLTStateById } from "../tables/lightningTalkTable";
-import { deleteNextLT, getNextLT, insertNextLTs } from "../tables/nextLightningTalkTable";
+import { deleteAllNextLTs, getAllDoneNextLTs, getNextLT, insertNextLTs, updateDoneNextLT } from "../tables/nextLightningTalkTable";
 import { moveNextLTButton } from "../buttons/moveNextLTButton";
 
 const { NOTIFICATION_CHANNEL_ID, ROLE_ID } = process.env;
@@ -138,10 +138,10 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
             return;
         }
 
-        const { error: deleteNextLTError } = await deleteNextLT(doneLT.id);
+        const { error: nextDoneLTError } = await updateDoneNextLT(doneLT.id);
 
-        if (deleteNextLTError) {
-            console.error('Failed to delete next LT', deleteNextLTError);
+        if (nextDoneLTError) {
+            console.error('Failed to be done next LT', nextDoneLTError);
             return;
         }
     }
@@ -165,13 +165,31 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
                 nextLT.lightningTalk.description ? `概要：${nextLT.lightningTalk.description}` : '',
             ].filter(Boolean).join('\n')
             :
-            `${roleMention(ROLE_ID)}\nこのセッションにおける全てのLTが終了しました！`;
+            `${roleMention(ROLE_ID)}\nこのセッションにおける全てのLTが終了しました！\n投票をお願いします！`;
 
     const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(moveNextLTButton.create())
 
     const sendMessage = await channel?.send({ content: notificationMessageContent, components: nextLT ? [row] : [] });
     console.log('sendMessage', sendMessage.content);
+
+    if (!nextLT) {
+        const { nextLTs, error } = await getAllDoneNextLTs();
+        if (error || !nextLTs) {
+            console.error('Failed to get all done next LTs', error);
+            return;
+        }
+        nextLTs.map(async (nextLT) => {
+            const message = await channel?.send(
+                `「${nextLT.lightningTalk.title}」 発表者：${userMention(nextLT.lightningTalk.speaker)}`
+            )
+            await message.react('🥇');
+            await message.react('🥈');
+        }
+        );
+
+        await deleteAllNextLTs();
+    }
 
     console.log('end moveNextLT');
 }

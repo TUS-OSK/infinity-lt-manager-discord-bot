@@ -44,7 +44,7 @@ export const insertNextLTs = async (lightningTalkIds: number[]): Promise<{ nextL
  * 
  * @returns {Promise<{ count: number | null, error: any }>} 削除されたレコードの数とエラー情報を含むPromise
  */
-const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }> => {
+export const deleteAllNextLTs = async (): Promise<{ count: number | null, error: any }> => {
     console.log('start deleteAllNextLTs');
 
     const prisma = new PrismaClient();
@@ -85,6 +85,9 @@ export const getNextLT = async (): Promise<{ nextLT: NextLightningTalkWithDetail
                         description: true
                     }
                 }
+            },
+            where: {
+                done: false
             },
             orderBy: {
                 order: 'asc'
@@ -130,3 +133,66 @@ export const deleteNextLT = async (nextLTId: number): Promise<{ nextLT: NextLigh
         console.log('end deleteNextLT');
     }
 }
+
+export const updateDoneNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
+    console.log('start updateDoneNextLT');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const nextLT: NextLightningTalk = await prisma.nextLightningTalk.update({
+            where: {
+                id: nextLTId
+            },
+            data: {
+                done: true
+            }
+        });
+        console.log('updateDoneNextLT', nextLT);
+
+        return { nextLT, error: null };
+    } catch (error: any) {
+        console.error('Failed to updateDoneNextLT', error);
+        return { nextLT: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end updateDoneNextLT');
+    }
+}
+
+export const getAllDoneNextLTs = async (): Promise<{ nextLTs: NextLightningTalkWithDetails[] | null, error: any }> => {
+    console.log('start getAllDoneNextLTs');
+
+    const prisma = new PrismaClient();
+
+    try {
+        const nextLTs: NextLightningTalkWithDetails[] = await prisma.nextLightningTalk.findMany({
+            include: {
+                lightningTalk: {
+                    select: {
+                        id: true,
+                        title: true,
+                        speaker: true,
+                        description: true
+                    }
+                }
+            },
+            where: {
+                done: true
+            },
+            orderBy: {
+                order: 'asc'
+            }
+        });
+        console.log('getAllDoneNextLTs', nextLTs);
+
+        return { nextLTs, error: null };
+    } catch (error: any) {
+        console.error('Failed to getAllDoneNextLTs', error);
+        return { nextLTs: null, error };
+    } finally {
+        await prisma.$disconnect();
+        console.log('end getAllDoneNextLTs');
+    }
+}
+
