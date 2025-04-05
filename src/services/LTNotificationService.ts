@@ -70,7 +70,7 @@ export const notifyNextLTsByCommand = async (interaction: CommandInteraction) =>
 export const startLTsByCommand = async (interaction: CommandInteraction) => {
     console.log('start startLTsByCommand');
 
-    const limit = interaction.options.get('limit')?.value as number || 10
+    const limit = 5;
     const { lts, error: getNextLtsError } = await getNextReadyLTs(limit);
 
     if (getNextLtsError || !lts) {
@@ -163,7 +163,7 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
         return;
     }
 
-    const channel = client.channels.cache.get(NOTIFICATION_CHANNEL_ID) as TextChannel;
+    const channel = client.channels.cache.get(TIMELINE_CHANNEL_ID) as TextChannel;
     console.log('channel', channel.name);
 
     const notificationMessageContent =
