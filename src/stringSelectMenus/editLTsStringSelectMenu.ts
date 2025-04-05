@@ -20,13 +20,15 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
             return null;
         }
 
+        console.log('LTs', lts);
+
         return new StringSelectMenuBuilder()
             .setCustomId(`my-lts-${discordUserId}`)
             .setPlaceholder('発表順に並んでいます')
             .addOptions(
                 lts.map(lt => {
                     return new StringSelectMenuOptionBuilder()
-                        .setLabel(`「${lt.title}」 (${lt.state === "READY" ? "準備中" : "発表可能"}): 優先度${lt.priority}`)
+                        .setLabel(`「${lt.title}」 (${lt.state === "UNREADY" ? "準備中" : "発表可能"}): 優先度${lt.priority}`)
                         .setValue(lt.id.toString())
                 })
             );
@@ -47,11 +49,11 @@ export const editLTsStringSelectMenu: StringSelectMenu = {
             return;
         }
 
-        const ltInfoString = `タイトル: ${lt.title}\n状態: ${lt.state === "READY" ? "準備中" : "発表可能"}\n説明: ${lt.description}`;
+        const ltInfoString = `タイトル: ${lt.title}\n状態: ${lt.state === "UNREADY" ? "準備中" : "発表可能"}\n説明: ${lt.description}`;
 
         const row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(deleteLTButton.create(lt.id.toString()))
-            .addComponents(lt.state === "UNREADY" ? unreadyLTButton.create(lt.id.toString()) : readyLTButton.create(lt.id.toString()))
+            .addComponents(lt.state === "UNREADY" ? readyLTButton.create(lt.id.toString()) : unreadyLTButton.create(lt.id.toString()))
             .addComponents(MoveToFrontLTButton.create(lt.id.toString()))
 
         await interaction.editReply({
