@@ -1,3 +1,7 @@
+/**
+ * LT（ライトニングトーク）管理サービス
+ * LTの登録、削除、状態変更などのビジネスロジックを扱う
+ */
 import { ActionRowBuilder } from "discord.js";
 import type { ButtonBuilder, ButtonInteraction, Client, BaseMessageOptions, Message } from "discord.js";
 import { deleteLTById, insertLT, updateLTStateById } from "../tables/lightningTalkTable";
@@ -73,6 +77,13 @@ export const handleLTDeletion = async (client: Client, ltId: number, messageCont
     return ({ content: newContent, components: [] });
 }
 
+/**
+ * LTの準備状態を切り替える関数
+ * 
+ * @param interaction - ボタンインタラクションオブジェクト
+ * @param isCurrentlyReady - 現在の準備状態
+ * @returns Promise<void>
+ */
 export const switchLTReadyStateByButton = async (interaction: ButtonInteraction, isCurrentlyReady: boolean) => {
     console.log('switchReadyState start');
 

@@ -1,8 +1,20 @@
+/**
+ * メッセージ編集サービス
+ * Discordメッセージの編集やフォーマット変更などの機能を提供する
+ */
 import type { Client, Message, TextChannel } from "discord.js";
 
 const { NOTIFICATION_CHANNEL_ID } = process.env;
 
 
+/**
+ * メッセージIDからメッセージを取得する
+ * @param client - Discordクライアントインスタンス
+ * @param messageId - 取得するメッセージのID
+ * @param textChannelId - メッセージが存在するテキストチャンネルID
+ * @returns Promise<Message> 取得したメッセージ
+ * @throws チャンネルが見つからない場合にエラーをスロー
+ */
 const fetchMessageById = async (client: Client, messageId: string, textChannelId: string = NOTIFICATION_CHANNEL_ID) => {
     const channel = client.channels.cache.get(textChannelId) as TextChannel;
     if (!channel) {

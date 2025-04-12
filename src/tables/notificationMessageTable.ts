@@ -1,6 +1,11 @@
 import { type NotificationMessage, PrismaClient } from "@prisma/client";
 
 /**
+ * 通知メッセージテーブル操作のための関数群
+ * Discord通知メッセージとLTの関連付けを管理する
+ */
+
+/**
  * 指定されたlightningTalkIdとmessageIdを使用して通知メッセージを挿入します。
  * 
  * @param {number} lightningTalkId - 挿入する通知メッセージのlightningTalkId。

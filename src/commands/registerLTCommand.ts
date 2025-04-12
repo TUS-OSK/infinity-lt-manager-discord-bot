@@ -1,8 +1,16 @@
+/**
+ * LT登録コマンド
+ * ユーザーがLTを登録するためのスラッシュコマンドを提供する
+ */
 import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder } from '@discordjs/builders';
 import type { Command } from '../types';
 import { handleLTRegistration } from '../services/LTManagementService';
 
+/**
+ * LT登録コマンドの実装
+ * タイトル、準備状態、説明を入力としてLTを登録する
+ */
 export const registerLTCommand: Command = {
     data: new SlashCommandBuilder()
         .setName('register-lt')
@@ -15,6 +23,11 @@ export const registerLTCommand: Command = {
         return interaction.commandName === this.data.name;
     },
 
+    /**
+     * コマンド実行処理
+     * @param interaction - コマンドインタラクション
+     * @returns Promise<void>
+     */
     execute: async function (interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 

@@ -134,6 +134,12 @@ export const deleteNextLT = async (nextLTId: number): Promise<{ nextLT: NextLigh
     }
 }
 
+/**
+ * 指定されたIDのnextLTを「完了」状態に更新します。
+ * 
+ * @param {number} nextLTId - 更新するnextLTのID
+ * @returns {Promise<{ nextLT: NextLightningTalk | null, error: any }>} 更新されたnextLTとエラー情報を含むPromise
+ */
 export const updateDoneNextLT = async (nextLTId: number): Promise<{ nextLT: NextLightningTalk | null, error: any }> => {
     console.log('start updateDoneNextLT');
 
@@ -160,6 +166,11 @@ export const updateDoneNextLT = async (nextLTId: number): Promise<{ nextLT: Next
     }
 }
 
+/**
+ * 完了状態の全てのnextLTを取得します。
+ * 
+ * @returns {Promise<{ nextLTs: NextLightningTalkWithDetails[] | null, error: any }>} 完了状態のnextLTリストとエラー情報を含むPromise
+ */
 export const getAllDoneNextLTs = async (): Promise<{ nextLTs: NextLightningTalkWithDetails[] | null, error: any }> => {
     console.log('start getAllDoneNextLTs');
 
@@ -195,4 +206,3 @@ export const getAllDoneNextLTs = async (): Promise<{ nextLTs: NextLightningTalkW
         console.log('end getAllDoneNextLTs');
     }
 }
-
