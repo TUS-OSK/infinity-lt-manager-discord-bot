@@ -1,3 +1,7 @@
+/**
+ * LT通知サービス
+ * LTの登録通知、次回LT通知、LT開始通知などの通知関連機能を提供する
+ */
 import { ActionRowBuilder, ButtonBuilder, CommandInteraction, roleMention, userMention, type Client, type TextChannel } from "discord.js";
 import type { LightningTalk } from "@prisma/client";
 import { insertNotificationMessage } from "../tables/notificationMessageTable";
@@ -8,6 +12,12 @@ import { moveNextLTButton } from "../buttons/moveNextLTButton";
 const { NOTIFICATION_CHANNEL_ID, TIMELINE_CHANNEL_ID, ROLE_ID } = process.env;
 
 
+/**
+ * LT登録通知を送信する
+ * @param client - Discordクライアントインスタンス
+ * @param lt - 登録されたLT情報
+ * @returns Promise<void>
+ */
 export const notifyLTRegistration = async (client: Client, lt: LightningTalk) => {
     console.log('start announceRegisterLT');
 
@@ -30,6 +40,11 @@ export const notifyLTRegistration = async (client: Client, lt: LightningTalk) =>
     console.log('end announceRegisterLT');
 }
 
+/**
+ * 次回LT通知を送信する
+ * @param interaction - コマンドインタラクション
+ * @returns Promise<void>
+ */
 export const notifyNextLTsByCommand = async (interaction: CommandInteraction) => {
     console.log('start notifyNextLTs');
 
@@ -67,6 +82,11 @@ export const notifyNextLTsByCommand = async (interaction: CommandInteraction) =>
     console.log('end notifyNextLTs');
 }
 
+/**
+ * LTセッションを開始し、通知を送信する
+ * @param interaction - コマンドインタラクション
+ * @returns Promise<void>
+ */
 export const startLTsByCommand = async (interaction: CommandInteraction) => {
     console.log('start startLTsByCommand');
 
@@ -130,6 +150,12 @@ export const startLTsByCommand = async (interaction: CommandInteraction) => {
     console.log('end startLTsByCommand');
 }
 
+/**
+ * 次のLTに移動し、通知を送信する
+ * @param client - Discordクライアントインスタンス
+ * @param isFirst - 最初のLTかどうかのフラグ
+ * @returns Promise<void>
+ */
 export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
     console.log('start moveNextLT');
 
@@ -203,4 +229,3 @@ export const moveNextLT = async (client: Client, isFirst: boolean = false) => {
 
     console.log('end moveNextLT');
 }
-
